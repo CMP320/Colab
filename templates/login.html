@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}
+Login
+{% endblock title %}
+{% block content %}
+
+<main class="d-flex flex-column justify-content-center align-items-center my-2 my-md-5 mb-4">
+    <div class="row card-group shadow m-4">
+        <img src="{{ url_for('static', filename='images/tasks.png') }}" alt="" class="img-fluid card d-none p-xl-5 d-xl-block col-xl split-img">
+        <div class="col-xl card p-5 m-0">
+            <div class="display-3 h1 text-primary text-center pb-2">&nbsp;c.</div>
+            <div class="card-title h4 text-center">Login to collab</div>
+            <hr>
+            <form action="{{ url_for('login') }}" method="POST">
+                <div class="py-2">
+                    <label for="Username" class="form-label">Username or email address</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-primary text-white" id="inputGroupPrepend">@</span>
+                        <input type="text" class="form-control" id="Username" name="user" aria-describedby="inputGroupPrepend"
+                            required>
+                    </div>
+                </div>
+
+                <div class="py-2">
+                    <label for="Password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-primary text-white" id="inputGroupPrepend">&nbsp;•&nbsp;</span>
+                        <input type="password" class="form-control" id="exampleInputPassword" name="pass" required>
+                    </div>
+                    <a href="#">Forgot Password?</a>
+                </div>
+
+                <div class="text-center pt-4">
+                    <button class="btn btn-primary w-75" type="submit">Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+
+{% endblock content %}

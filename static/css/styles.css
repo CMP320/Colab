@@ -1,0 +1,33 @@
+@import url("theme.css");
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.btn {
+  font-weight: bold;
+  padding-block: 0.5em;
+  transition: all .2s ease-in-out;
+}
+
+.btn:hover {
+  transform: scale(0.99)
+}
+
+a, a:hover {
+  text-decoration: none;
+}
+
+.navbar-brand {
+  font-size: 1.5em;
+  margin: 0;
+}
+
+.nav-link.active {
+  font-weight: bold;
+}
+
+.split-img {
+  max-width: 45rem;
+}
