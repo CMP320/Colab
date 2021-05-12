@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{ user.name }}'s Dashboard
+{% endblock title %}
+
+{% block content %}
+Hello {{user.name}} :) <br> <a type="button" class="btn btn-primary" href="url_for('/logout')">logout</a>
+{% endblock content %}

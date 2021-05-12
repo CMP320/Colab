@@ -16,6 +16,7 @@ def getType(ck):
     if ck['sessionID'] not in sessions.keys():
         return -1
     return sessions[ck['sessionID']].type
+
 @dataclass()
 class Employee:
     name : str
@@ -79,14 +80,4 @@ def dashboard():
             return resp
     else:
         return redirect(url_for('login'))
-    return f'Hello {emp.name} :) <br> <a href="/logout" type="button" class="btn btn-primary">logout</a>'
-
-def logout():
-	global sessions
-	if 'sessionID' in request.cookies:
-			s = request.cookies['sessionID']
-			if s in sessions:
-				sessions.pop(s)
-	resp = redirect(url_for('index'))
-	resp.set_cookie('sessionID', '', expires=0)
-	return resp
+    return render_template('dashboard.html', user=emp)
