@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+    <title>{{ user.name }}'s Dashboard</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}" />
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+        crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg shadow-sm">
+        <a class="navbar-brand h1" href="{{ url_for('login') }}">collab</a>
+
+        <div class="dropdown ml-auto">
+            <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="material-icons align-middle">account_circle</span>
+                {{ user.name }}
+            </a>
+
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuLink">
+                <li>
+                    <a class="dropdown-item" href="#">
+                        <span class="material-icons align-middle">password</span>
+                        Change Password
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="{{ url_for('logout') }}">
+                        <span class="material-icons align-middle">logout</span>
+                        Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="dashboard">
+        <nav class="nav nav-tabs nav-pills flex-column text-center p-4">
+            <h4 class="h2 py-3 py-xl-5">Dashboard</h4>
+
+            {% block navlinks %}
+
+            {% endblock navlinks %}
+        </nav>
+
+        <div class="flex-grow-1 tab-content p-md-5 bg-secondary">
+            {% block navtabs %}
+
+            {% endblock navtabs %}
+        </div>
+    </main>
+
+</body>
+
+</html>

@@ -1,8 +1,34 @@
-{% extends 'base.html' %}
-{% block title %}
-    {{ user.name }}'s Dashboard
-{% endblock title %}
+{% extends 'base_dash.html' %}
 
-{% block content %}
-Hello {{user.name}} :) <br> <a type="button" class="btn btn-primary" href="url_for('/logout')">logout</a>
-{% endblock content %}
+{% block navlinks %}
+
+<button class="fs-5 pr-2 nav-link text-white active" data-bs-toggle="tab" href="#tasks" data-target="#tasks" type="button"
+    role="tab">
+    <span class="material-icons align-middle">task_alt</span>
+    Tasks
+</button>
+
+<button class="fs-5 pr-2 nav-link text-white" data-bs-toggle="tab" href="#team" data-target="#team" type="button" role="tab">
+    <span class="material-icons align-middle">groups</span>
+    Team
+</button>
+
+{% endblock navlinks %}
+
+{% block navtabs %}
+
+<div class="card border-primary mb-3 tab-pane active in" role="tabpanel" id="tasks">
+    <div class="card-header text-primary h5 p-3">Tasks</div>
+    <div class="card-body">
+
+    </div>
+</div>
+
+<div class="card border-primary mb-3 tab-pane in" role="tabpanel" id="team">
+    <div class="card-header text-primary h5 p-3">Team</div>
+    <div class="card-body">
+        
+    </div>
+</div>
+
+{% endblock navtabs %}
