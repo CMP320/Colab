@@ -1,9 +1,92 @@
-from flask import render_template, Flask, url_for
+from dataclasses import dataclass
+from flask import render_template, Flask, request, redirect, url_for, make_response
+from hashlib import md5, sha256
 import cx_Oracle
+from os import urandom
+from datetime import datetime as dt
+
+sessions = {}
 
 app = Flask(__name__)
 
-@app.route('/login')
-@app.route('/')
+def getType(ck):
+    global sessions
+    if 'sessionID' not in ck.keys():
+        return -1
+    if ck['sessionID'] not in sessions.keys():
+        return -1
+    return sessions[ck['sessionID']].type
+@dataclass()
+class Employee:
+    name : str
+    username : str
+
+@app.route('/login', methods=['GET','POST'])
 def login():
-    return render_template('login.html')
+    global sessions
+    if request.method == 'GET':
+        if 'sessionID' in request.cookies:
+            s = request.cookies['sessionID']
+            if s in sessions:
+                return redirect(url_for('dashboard'))
+            else: # invalid sessionID cookie
+                resp = make_response(render_template("login.html"))
+                resp.set_cookie('sessionID', '', expires=0)
+                return resp
+        else:
+            return render_template("login.html")
+    # else: request.method=='POST'
+    user = request.form['user']
+    pwd = request.form['pass']
+    """md5(request.form['pass'].encode()).hexdigest()"""
+    connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+    cur = connection.cursor()
+    res = cur.execute(f"select name, username from pemployee where username='{user}' and password='{pwd}'")
+    res = [row for row in res]
+    print(res)
+    if len(res) > 0:
+        emp = Employee(*res[0])
+        sessID = sha256(emp.username.encode() + urandom(16)).hexdigest()
+        sessions[sessID] = emp
+        print(sessions)
+        resp = redirect(url_for('dashboard'))
+        resp.set_cookie('sessionID', sessID)
+        return resp
+    else:
+        return 'pls no hax'
+
+@app.route("/logout", methods = ['GET'])
+def logout():
+    global sessions
+    if 'sessionID' in request.cookies:
+            s = request.cookies['sessionID']
+            if s in sessions:
+                sessions.pop(s)
+    resp = redirect(url_for('login'))
+    resp.set_cookie('sessionID', '', expires=0)
+    return resp
+
+@app.route('/dashboard')
+def dashboard():
+    global sessions
+    if 'sessionID' in request.cookies:
+        s = request.cookies['sessionID']
+        if s in sessions:
+            emp = sessions[s]
+        else: # invalid sessionID cookie
+            resp = redirect(url_for('login'))
+            resp.set_cookie('sessionID', '', expires=0)
+            return resp
+    else:
+        return redirect(url_for('login'))
+    return f'Hello {emp.name} :) <br> <a href="/logout" type="button" class="btn btn-primary">logout</a>'
+
+def logout():
+	global sessions
+	if 'sessionID' in request.cookies:
+			s = request.cookies['sessionID']
+			if s in sessions:
+				sessions.pop(s)
+	resp = redirect(url_for('index'))
+	resp.set_cookie('sessionID', '', expires=0)
+	return resp
