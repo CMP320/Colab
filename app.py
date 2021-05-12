@@ -38,18 +38,17 @@ def login():
             return render_template("login.html")
     # else: request.method=='POST'
     user = request.form['user']
-    pwd = request.form['pass']
-    """md5(request.form['pass'].encode()).hexdigest()"""
+    pwd = md5(request.form['pass'].encode()).hexdigest()
     connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
     cur = connection.cursor()
     res = cur.execute(f"select name, username from pemployee where username='{user}' and password='{pwd}'")
     res = [row for row in res]
-    print(res)
+    # print(res)
     if len(res) > 0:
         emp = Employee(*res[0])
         sessID = sha256(emp.username.encode() + urandom(16)).hexdigest()
         sessions[sessID] = emp
-        print(sessions)
+        # print(sessions)
         resp = redirect(url_for('dashboard'))
         resp.set_cookie('sessionID', sessID)
         return resp
