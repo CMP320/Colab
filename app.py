@@ -21,6 +21,7 @@ def getType(ck):
 class Employee:
     name : str
     username : str
+    type : str
 
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -41,7 +42,7 @@ def login():
     pwd = md5(request.form['pass'].encode()).hexdigest()
     connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
     cur = connection.cursor()
-    res = cur.execute(f"select name, username from pemployee where username='{user}' and password='{pwd}'")
+    res = cur.execute(f"select name, username, type from plogin where username='{user}' and password='{pwd}'")
     res = [row for row in res]
     # print(res)
     if len(res) > 0:
@@ -79,4 +80,14 @@ def dashboard():
             return resp
     else:
         return redirect(url_for('login'))
-    return render_template('dashboard.html', user=emp)
+    if emp.type == 'admin':
+        print('admin')
+        return render_template('dashboard.html', user=emp)
+    if emp.type == 'teamleader':
+        print('team leader')
+        return render_template('dashboard.html', user=emp)
+    if emp.type == 'normal':
+        print('normal')
+        return render_template('dashboard.html', user=emp)
+    else:
+        assert False
