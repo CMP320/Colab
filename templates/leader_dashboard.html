@@ -2,6 +2,26 @@
 
 {% block navlinks %}
 
+<div class="modal fade" id="confirmTaskModal" tabindex="-1" aria-labelledby="confirmTaskModal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-secondary">
+            <div class="modal-header">
+                <h5 class="modal-title h4 text-danger">Confirm changes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to make these changes?</p>
+                <div class="visually-hidden" id="confirmTask"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <a type="button" class="btn btn-danger text-white" data-bs-dismiss="modal"
+                    onclick="updateTask(''+$('#confirmTask').html())">Proceed</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <button class="fs-5 pr-2 nav-link text-white active" data-bs-toggle="tab" href="#tasks" data-target="#tasks" type="button"
     role="tab">
     <span class="material-icons align-middle">task_alt</span>
@@ -31,6 +51,7 @@
                             <th class="text-center align-middle p-xl-3">Description</th>
                             <th class="text-center align-middle p-xl-3">Importance</th>
                             <th class="text-center align-middle p-xl-3">Progress</th>
+                            <th class="text-center align-middle p-xl-3">Actions</th>
                         </tr>
                     </thead>
                     {% for task in tasks %}
@@ -41,28 +62,37 @@
                         <td class="text-center align-middle p-xl-3">
                             {{ task.username }}
                         </td>
-                        <td class="text-center align-middle p-xl-3">
-                            <input type="text" onfocus="(this.type='date')" class="form-control bg-dark text-light" id="exp"
-                                value="{{ task.deadline.strftime('%d/%m/%Y') }}" name="deadline" required>
+                        <td class="text-center align-middle p-xl-3" id="gg">
+                            <input type="text" onfocus="(this.type='date')" class="form-control bg-dark text-light"
+                                value="{{ task.deadline.strftime('%d/%m/%Y') }}" name="deadline" required id="dlt{{task.taskid}}">
                         </td>
                         <td class="text-center align-middle p-xl-3">
-                            <div contenteditable>{{ task.desc }}</div>
+                            <div contenteditable id="descrt{{task.taskid}}">{{ task.desc }}</div>
                         </td>
                         <td class="text-center align-middle p-xl-3">
-                            <select class="form-select bg-dark text-light">
-                                <option value="0" {% if task.importance == 0 %}
+                            <select class="form-select bg-dark text-light" id="impt{{task.taskid}}">
+                                <option value="0" {% if task.imp == 0 %}
                                     selected
                                 {% endif %}>Low</option>
-                                <option value="1" {% if task.importance == 1 %}
+                                <option value="1" {% if task.imp == 1 %}
                                 selected
                             {% endif %}>Medium</option>
-                                <option value="2" {% if task.importance == 2 %}
+                                <option value="2" {% if task.imp == 2 %}
                                 selected
                             {% endif %}>High</option>
                             </select>
                         </td>
                         <td class="text-center align-middle p-xl-3">
-                            <div contenteditable>{{ ["Assigned", "In Progress", "Completed"][task.progress] }}</div>
+                            <div>{{ ["Assigned", "In Progress", "Completed"][task.progress] }}</div>
+                        </td>
+                        <td class="text-center align-middle p-xl-3">
+                            <a class="text-warning fw-bold" href="" data-bs-toggle="modal"
+                                onclick="showTaskConfirm('t'+'{{ task.taskid }}')" data-bs-target="#confirmTaskModal">
+                                <span class="material-icons align-middle">
+                                    update
+                                </span>
+                                Update
+                            </a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -73,7 +103,7 @@
 </div>
 
 <div class="card border-primary mb-3 tab-pane in" role="tabpanel" id="team">
-    <div class="card-header text-primary h5 p-3">Team</div>
+    <div class="card-header text-primary h5 p-3">Team {{teamName}}</div>
     <div class="card-body">
         <div class="table-responsive">
             <table class="table w-100 p-md-5">
@@ -105,6 +135,28 @@
         </div>
     </div>
 </div>
+
+<script>
+
+    function updateTask(taskID) { // I should rename this
+        console.log(taskID);
+        var xhr = new XMLHttpRequest();
+        var e = document.getElementById("imp" + taskID);
+        var data = { "taskID": taskID[1], "deadline": document.getElementById("dl" + taskID).value, "description": document.getElementById("descr" + taskID).innerHTML, "importance": e.options[e.selectedIndex].value };
+        console.log(data);
+        xhr.open("POST", "/updateTask", true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify(data));
+
+        setTimeout(function () {
+            $('#tasks').load(document.URL + ' #tasks');
+        }, 500);
+    }
+
+    function showTaskConfirm(taskID) {
+        $('#confirmTask').html(taskID);
+    }
+</script>
 
 {% endblock navtabs %}
 

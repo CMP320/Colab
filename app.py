@@ -119,7 +119,13 @@ def dashboard():
         task = []
         for re in list(leader_task_dashboard(emp)):
             task.append(EmpTask(*re))
-        return render_template('leader_dashboard.html', res=team, tasks=task, user=emp)
+
+        connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+        cur = connection.cursor()
+        res = cur.execute(f"select teamname from pteam where teamID = (select teamID from pteamleader where username = '{emp.username}')")
+        teamName = list(res)[0][0]
+
+        return render_template('leader_dashboard.html', res=team, tasks=task, user=emp, teamName = teamName)
         
     if emp.type == 'normal':
         # print('normal')
@@ -140,10 +146,27 @@ def dashboard():
         cur = connection.cursor()
         res = cur.execute(f"select name from pemployee where username = (select username from pteamleader where teamID={teamID})")
         leader= list(res)[0][0]
-        return render_template('normal_dashboard.html', user=emp, assignedTasks=assignedTasks, inprogTasks=inprogTasks, complTasks=complTasks, teamID=teamID, members=members, leader=leader)
+
+        cur = connection.cursor()
+        res = cur.execute(f"select teamname from pteam where teamID = {teamID}")
+        teamName = list(res)[0][0]
+
+        return render_template('normal_dashboard.html', user=emp, assignedTasks=assignedTasks, inprogTasks=inprogTasks, complTasks=complTasks, teamID=teamID, members=members, leader=leader, teamName=teamName)
 
     else:
         assert False
+
+@app.route("/updateTask", methods = ['POST'])
+def updateTask():
+    taskID = int(request.json['taskID'])
+    deadline = request.json['deadline']
+    descr = request.json['description']
+    imp = int(request.json['importance'])
+    connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+    cur = connection.cursor()
+    res = cur.execute(f"update ptask set deadline = TO_DATE('{deadline}', 'yyyy-mm-dd'), importance = {imp}, descr = '{descr}'  where taskID = {taskID}")
+    connection.commit()
+    return 'success'
 
 
 @app.route("/startCompleteTask", methods = ['POST'])
@@ -173,6 +196,6 @@ def leader_task_dashboard(emp):
     connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
     cur = connection.cursor()
 
-    return cur.execute(f"SELECT TASKID, USERNAME, DEADLINE, DESCR, IMPORTANCE, PROGRESS FROM PTASK, PNORMAL WHERE PTASK.ASSIGNEDTO = PNORMAL.USERNAME AND PNORMAL.TEAMID = (SELECT PTEAMLEADER.TEAMID FROM PTEAMLEADER WHERE PTEAMLEADER.USERNAME = '{emp.username}')")
+    return cur.execute(f"SELECT TASKID, USERNAME, DEADLINE, DESCR, IMPORTANCE, PROGRESS FROM PTASK, PNORMAL WHERE PTASK.ASSIGNEDTO = PNORMAL.USERNAME AND PNORMAL.TEAMID = (SELECT PTEAMLEADER.TEAMID FROM PTEAMLEADER WHERE PTEAMLEADER.USERNAME = '{emp.username}') order by taskID desc")
     
 
