@@ -23,6 +23,7 @@ class Employee:
     username : str
     type : str
 
+@app.route('/',methods=['GET','POST'])
 @app.route('/login', methods=['GET','POST'])
 def login():
     global sessions
