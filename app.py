@@ -22,6 +22,8 @@ class Employee:
     name : str
     username : str
     type : str
+    hiredate : str = ''
+    sal : float = 0.0
 
 @dataclass()
 class Task:
@@ -90,6 +92,7 @@ def dashboard():
             return resp
     else:
         return redirect(url_for('login'))
+
     if emp.type == 'admin':
         print('admin')
         connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
@@ -99,7 +102,10 @@ def dashboard():
         return render_template('admin_dashboard.html', user=emp, tasks=tasks)
     if emp.type == 'teamleader':
         print('team leader')
-        return render_template('dashboard.html', user=emp)
+        res = []
+        for re in list(leader_team_dashboard(emp)):
+            res.append(Employee(*re))
+        return render_template('leader_dashboard.html', res=res, user=emp)
     if emp.type == 'normal':
         # print('normal')
         connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
@@ -125,7 +131,6 @@ def dashboard():
         assert False
 
 
-
 @app.route("/startCompleteTask", methods = ['POST'])
 def startCompleteTask():
     global sessions
@@ -142,3 +147,17 @@ def startCompleteTask():
     res = cur.execute(f"update ptask set progress = {newProg} where assignedto='{username}' and taskID = {taskID}")
     connection.commit()
     return 'success'
+    
+def leader_team_dashboard(emp):
+    connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+    cur = connection.cursor()
+
+    return cur.execute(f"SELECT * FROM PEMPLOYEE WHERE PEMPLOYEE.USERNAME IN (SELECT PNORMAL.USERNAME FROM PNORMAL WHERE PNORMAL.TEAMID = (SELECT PTEAMLEADER.TEAMID FROM PTEAMLEADER WHERE PTEAMLEADER.USERNAME = '{emp.username}'))")
+
+def leader_task_dashboard(emp):
+    connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+    cur = connection.cursor()
+
+    return cur.execute(f"SELECT * FROM PEMPLOYEE WHERE PEMPLOYEE.USERNAME IN (SELECT PNORMAL.USERNAME FROM PNORMAL WHERE PNORMAL.TEAMID = (SELECT PTEAMLEADER.TEAMID FROM PTEAMLEADER WHERE PTEAMLEADER.USERNAME = '{emp.username}'))")
+    
+

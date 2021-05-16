@@ -1,0 +1,62 @@
+{% extends 'base_dash.html' %}
+
+{% block navlinks %}
+
+<button class="fs-5 pr-2 nav-link text-white active" data-bs-toggle="tab" href="#tasks" data-target="#tasks" type="button"
+    role="tab">
+    <span class="material-icons align-middle">task_alt</span>
+    Tasks
+</button>
+
+<button class="fs-5 pr-2 nav-link text-white" data-bs-toggle="tab" href="#team" data-target="#team" type="button" role="tab">
+    <span class="material-icons align-middle">groups</span>
+    Team
+</button>
+
+{% endblock navlinks %}
+
+{% block navtabs %}
+
+<div class="card border-primary mb-3 tab-pane active in" role="tabpanel" id="tasks">
+    <div class="card-header text-primary h5 p-3">Tasks</div>
+    <div class="card-body">
+
+    </div>
+</div>
+
+<div class="card border-primary mb-3 tab-pane in" role="tabpanel" id="team">
+    <div class="card-header text-primary h5 p-3">Team</div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table w-100 p-md-5">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center align-middle p-xl-3">Username</th>
+                        <th class="text-center align-middle p-xl-3">Name</th>
+                        <th class="text-center align-middle p-xl-3">Hiredate</th>
+                        <th class="text-center align-middle p-xl-3">Salary</th>
+                    </tr>
+                </thead>
+                {% for emp in res %}
+                <tr>
+                    <td class="text-center align-middle p-xl-3">
+                        {{ emp.username }}
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        {{ emp.name }}
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        {{ emp.hiredate.strftime("%d %B %Y") }}
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        {{ emp.sal }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock navtabs %}
+
