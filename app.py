@@ -23,6 +23,14 @@ class Employee:
     username : str
     type : str
 
+@dataclass()
+class Task:
+    id : int
+    deadline : str
+    imp : str
+    descr: str
+    prog: int
+
 @app.route('/',methods=['GET','POST'])
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -88,7 +96,44 @@ def dashboard():
         print('team leader')
         return render_template('dashboard.html', user=emp)
     if emp.type == 'normal':
-        print('normal')
-        return render_template('dashboard.html', user=emp)
+        # print('normal')
+        connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+        cur = connection.cursor()
+        res = cur.execute(f"select taskid, deadline, importance, descr, progress from ptask where assignedto = '{emp.username}'")
+        tasks = [Task(*r) for r in list(res)]
+        assignedTasks = [t for t in tasks if t.prog==0]
+        inprogTasks = [t for t in tasks if t.prog==1]
+        complTasks = [t for t in tasks if t.prog==2]
+        # print(tasks)
+        cur = connection.cursor()
+        res = cur.execute(f"select name from pemployee where username in (select username from pnormal where teamID = (select teamID from pnormal where username='{emp.username}'))")
+        members = [r[0] for r in res]
+        cur = connection.cursor()
+        res = cur.execute(f"select teamID from pnormal where username = '{emp.username}'")
+        teamID = int(list(res)[0][0])
+        cur = connection.cursor()
+        res = cur.execute(f"select name from pemployee where username = (select username from pteamleader where teamID={teamID})")
+        leader= list(res)[0][0]
+        return render_template('normal_dashboard.html', user=emp, assignedTasks=assignedTasks, inprogTasks=inprogTasks, complTasks=complTasks, teamID=teamID, members=members, leader=leader)
+
     else:
         assert False
+
+
+
+@app.route("/startCompleteTask", methods = ['POST'])
+def startCompleteTask():
+    global sessions
+    if getType(request.cookies) != "normal":
+        return redirect(url_for('index'))
+    
+    username = sessions[request.cookies['sessionID']].username
+    #print(request.json)
+    taskID = int(request.json['taskID'])
+    currProg = int(request.json['currProg'])
+    newProg = 1 if currProg == 0 else 2
+    connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+    cur = connection.cursor()
+    res = cur.execute(f"update ptask set progress = {newProg} where assignedto='{username}' and taskID = {taskID}")
+    connection.commit()
+    return 'success'

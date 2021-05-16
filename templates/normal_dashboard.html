@@ -1,0 +1,181 @@
+{% extends 'base_dash.html' %}
+
+{% block navlinks %}
+
+<button class="fs-5 pr-2 nav-link text-white active" data-bs-toggle="tab" href="#tasks" data-target="#tasks" type="button"
+    role="tab">
+    <span class="material-icons align-middle">task_alt</span>
+    Tasks
+</button>
+
+<button class="fs-5 pr-2 nav-link text-white" data-bs-toggle="tab" href="#team" data-target="#team" type="button" role="tab">
+    <span class="material-icons align-middle">groups</span>
+    Team
+</button>
+
+{% endblock navlinks %}
+
+{% block navtabs %}
+
+<div class="card border-primary mb-3 tab-pane active in" role="tabpanel" id="tasks">
+    <div class="card">
+        <div class="card-header h5">Assigned Tasks</div>
+        <div class="card-deck py-4 px-3">
+
+            {% for task in assignedTasks %}
+
+            <div class="card bg-primary text-light p-3">
+                <strong class="card-title">Task #{{task.id}}<br>Deadline:
+                    {{task.deadline.strftime('%d-%m-%y')}}</strong>
+                <ul class="card-body">
+                    <li>Priority: 
+                    {% if task.imp == 0 %}
+                    Low
+                    {% elif task.imp == 1 %}
+                    Normal
+                    {% else %}
+                    High
+                    {% endif %}</li>
+                    <br>
+                    <li>Details: {{task.descr}}</li>
+                    <br>
+                    <li>Status: 
+                    {% if task.prog == 0 %}
+                    Assigned
+                    {% elif task.imp == 1 %}
+                    In progress
+                    {% else %}
+                    Complete
+                    {% endif %}</li>
+
+                </ul>
+                <button class="btn btn-light text-primary"
+                    onclick="startOrComplete('{{task.id}}', '{{task.prog}}')">
+                    <span class="material-icons align-middle">done</span>
+                    Start
+                </button>
+            </div>
+
+            {% endfor %}
+
+        </div>
+    </div>
+    <br>
+    <div class="card">
+        <div class="card-header h5">Tasks in Progress</div>
+        <div class="card-deck py-4 px-3">
+
+            {% for task in inprogTasks %}
+
+            <div class="card bg-primary text-light p-3">
+                <strong class="card-title">Task #{{task.id}}<br>Deadline:
+                    {{task.deadline.strftime('%d-%m-%y')}}</strong>
+                <ul class="card-body">
+                    <li>Priority: 
+                        {% if task.imp == 0 %}
+                        Low
+                        {% elif task.imp == 1 %}
+                        Normal
+                        {% else %}
+                        High
+                        {% endif %}</li>
+                        <br>
+                        <li>Details: {{task.descr}}</li>
+                        <br>
+                        <li>Status: 
+                        {% if task.prog == 0 %}
+                        Assigned
+                        {% elif task.imp == 1 %}
+                        In progress
+                        {% else %}
+                        Complete
+                        {% endif %}</li>
+
+                </ul>
+                <button class="btn btn-light text-primary"
+                    onclick="startOrComplete('{{task.id}}', '{{task.prog}}')">
+                    <span class="material-icons align-middle">done_all</span>
+                    Mark as Complete
+                </button>
+            </div>
+
+            {% endfor %}
+
+        </div>
+    </div>
+    <br>
+    <div class="card">
+        <div class="card-header h5">Completed Tasks</div>
+        <div class="card-deck py-4 px-3">
+
+            {% for task in complTasks %}
+
+            <div class="card bg-primary text-light p-3">
+                <strong class="card-title">Task #{{task.id}}<br>Deadline:
+                    {{task.deadline.strftime('%d-%m-%y')}}</strong>
+                <ul class="card-body">
+                    <li>Priority: 
+                        {% if task.imp == 0 %}
+                        Low
+                        {% elif task.imp == 1 %}
+                        Normal
+                        {% else %}
+                        High
+                        {% endif %}</li>
+                        <br>
+                        <li>Details: {{task.descr}}</li>
+                        <br>
+                        <li>Status: 
+                        {% if task.prog == 0 %}
+                        Assigned
+                        {% elif task.imp == 1 %}
+                        In progress
+                        {% else %}
+                        Complete
+                        {% endif %}</li>
+                </ul>
+            </div>
+
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
+
+<div class="card border-primary mb-3 tab-pane in" role="tabpanel" id="team">
+    <div class="card-header text-primary h5 p-3">Team #{{teamID}}</div>
+    <div class="card-body">
+        Leader: {{leader}}
+        <br>
+        Members:
+        <br>
+        <ul>
+        {% for name in members %}
+        <li>{{name}}</li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<script>
+
+function startOrComplete(taskID, currProg) {
+        var xhr = new XMLHttpRequest();
+        var data = { "taskID": taskID, "currProg": currProg };
+
+        xhr.open("POST", '/startCompleteTask', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify(data));
+
+
+        setTimeout(function () {
+            $('#tasks').load(document.URL + ' #tasks');
+        }, 500);
+
+
+    }
+
+</script>
+
+{% endblock navtabs %}
+
