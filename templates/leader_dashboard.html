@@ -22,6 +22,58 @@
     </div>
 </div>
 
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content bg-secondary">
+            <div class="modal-header">
+                <h5 class="modal-title h5 text-primary" id="exampleModalLabel2">Create a new task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" id=newTaskForm>
+                <div class="modal-body text-center">
+                    <div class="col-md">
+                        <label for="name" class="form-label">Deadline</label>
+                        <input type="text" onfocus="(this.type='date')" class="form-control bg-dark text-light"
+                                placeholder="yyyy-mm-dd" name="deadline" required id="deadline">
+                    </div>
+                    <div class="col-md">
+                        <label for="price" class="form-label">Priority</label>
+                        <select class="form-select bg-dark text-light" id="imp" name="imp">
+                            <option value="0" selected>Low</option>
+                            <option value="1">Medium</option>
+                            <option value="2">High</option>
+                        </select>
+                    </div>
+                    <div class="col-md">
+                        <label for="description" class="form-label">Description</label>
+                        <input type="text" class="form-control bg-dark text-light" id="descr" placeholder="Description of the task"
+                            name="descr" required>
+                    </div>
+                    <div class="col-md">
+                        <label for="assignto" class="form-label">Assign to</label>
+                        <select class="form-select bg-dark text-light" id="assignto" name="assignto"> 
+                            {% for emp in res %}
+                            <option value="{{emp.username}}" {% if emp.username == res[0].username %}
+                                selected
+                            {% endif %}>{{emp.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                </div>
+
+                <div class="modal-footer text-center">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary w-75" type="submit" data-bs-dismiss="modal" onclick="addTask()">
+                        Create Task
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 <button class="fs-5 pr-2 nav-link text-white active" data-bs-toggle="tab" href="#tasks" data-target="#tasks" type="button"
     role="tab">
     <span class="material-icons align-middle">task_alt</span>
@@ -104,6 +156,13 @@
                     {% endfor %}
                 </table>
             </div>
+            <br>
+            <div class="text-center">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#addTaskModal" class="btn btn-primary w-50">
+                    <span class="material-icons align-middle">library_add</span>&emsp;
+                    Add Item
+                </a>
+            </div>
         </div>
     </div>
 </div>
@@ -144,6 +203,21 @@
 
 <script>
 
+    function addTask() {
+        var xhr = new XMLHttpRequest();
+        var data = $('#newTaskForm').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        console.log(data);
+        xhr.open("POST", "/addTask", true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify(data));
+
+        setTimeout(function () {
+            $('#tasks').load(document.URL + ' #tasks');
+        }, 500);
+    }
     function updateTask(taskID) { // I should rename this
         console.log(taskID);
         var xhr = new XMLHttpRequest();

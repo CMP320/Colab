@@ -170,6 +170,23 @@ def updateTask():
     return 'success'
 
 
+@app.route("/addTask", methods = ['POST'])
+def addTask():
+    connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+    cur = connection.cursor()
+    res = cur.execute(f"select max(taskID) from ptask")
+
+    taskID = int(list(res)[0][0]) + 1
+    deadline = request.json['deadline']
+    descr = request.json['descr']
+    imp = int(request.json['imp'])
+    assignedto = request.json['assignto']
+    cur = connection.cursor()
+    res = cur.execute(f"insert into ptask values ({taskID}, TO_DATE('{deadline}', 'yyyy-mm-dd'), {imp}, '{descr}', '{assignedto}', 0)")
+    connection.commit()
+    return 'success'
+
+
 @app.route("/startCompleteTask", methods = ['POST'])
 def startCompleteTask():
     global sessions
