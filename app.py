@@ -162,9 +162,10 @@ def updateTask():
     deadline = request.json['deadline']
     descr = request.json['description']
     imp = int(request.json['importance'])
+    assignedto = request.json['assignedto']
     connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
     cur = connection.cursor()
-    res = cur.execute(f"update ptask set deadline = TO_DATE('{deadline}', 'yyyy-mm-dd'), importance = {imp}, descr = '{descr}'  where taskID = {taskID}")
+    res = cur.execute(f"update ptask set assignedTo = '{assignedto}', deadline = TO_DATE('{deadline}', 'yyyy-mm-dd'), importance = {imp}, descr = '{descr}'  where taskID = {taskID}")
     connection.commit()
     return 'success'
 

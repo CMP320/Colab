@@ -60,11 +60,17 @@
                             {{ task.taskid }}
                         </td>
                         <td class="text-center align-middle p-xl-3">
-                            {{ task.username }}
+                            <select class="form-select bg-dark text-light" id="asst{{task.taskid}}">
+                                {% for emp in res %}
+                                <option value="{{emp.username}}" {% if task.username == emp.username %}
+                                    selected
+                                {% endif %}>{{emp.name}}</option>
+                                {% endfor %}
+                            </select>
                         </td>
                         <td class="text-center align-middle p-xl-3" id="gg">
                             <input type="text" onfocus="(this.type='date')" class="form-control bg-dark text-light"
-                                value="{{ task.deadline.strftime('%d/%m/%Y') }}" name="deadline" required id="dlt{{task.taskid}}">
+                                value="{{ task.deadline.strftime('%Y-%m-%d') }}" name="deadline" required id="dlt{{task.taskid}}">
                         </td>
                         <td class="text-center align-middle p-xl-3">
                             <div contenteditable id="descrt{{task.taskid}}">{{ task.desc }}</div>
@@ -142,7 +148,8 @@
         console.log(taskID);
         var xhr = new XMLHttpRequest();
         var e = document.getElementById("imp" + taskID);
-        var data = { "taskID": taskID[1], "deadline": document.getElementById("dl" + taskID).value, "description": document.getElementById("descr" + taskID).innerHTML, "importance": e.options[e.selectedIndex].value };
+        var e2 = document.getElementById("ass" + taskID);
+        var data = { "taskID": taskID[1], "deadline": document.getElementById("dl" + taskID).value, "description": document.getElementById("descr" + taskID).innerHTML, "importance": e.options[e.selectedIndex].value, "assignedto": e2.options[e2.selectedIndex].value };
         console.log(data);
         xhr.open("POST", "/updateTask", true);
         xhr.setRequestHeader('Content-Type', 'application/json');

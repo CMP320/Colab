@@ -155,6 +155,10 @@ function startOrComplete(taskID, currProg) {
 
     }
 
+    var intervalId = setInterval(function () {
+        $('#tasks').load(document.URL + ' #tasks')
+    }, 2000);
+
 </script>
 
 {% endblock navtabs %}
