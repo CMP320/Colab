@@ -34,6 +34,15 @@ class Task:
     assignedto : str
     progress : int
 
+@dataclass()
+class EmpTask:
+    taskid : int
+    username : str
+    deadline : str
+    desc : str
+    imp : int
+    progress : int
+
 @app.route('/',methods=['GET','POST'])
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -100,12 +109,18 @@ def dashboard():
         res = cur.execute(f"select * from ptask")
         tasks = [Task(*task) for task in list(res)]
         return render_template('admin_dashboard.html', user=emp, tasks=tasks)
+
     if emp.type == 'teamleader':
         print('team leader')
-        res = []
+        team = []
         for re in list(leader_team_dashboard(emp)):
-            res.append(Employee(*re))
-        return render_template('leader_dashboard.html', res=res, user=emp)
+            team.append(Employee(*re))
+        
+        task = []
+        for re in list(leader_task_dashboard(emp)):
+            task.append(EmpTask(*re))
+        return render_template('leader_dashboard.html', res=team, tasks=task, user=emp)
+        
     if emp.type == 'normal':
         # print('normal')
         connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
@@ -147,7 +162,7 @@ def startCompleteTask():
     res = cur.execute(f"update ptask set progress = {newProg} where assignedto='{username}' and taskID = {taskID}")
     connection.commit()
     return 'success'
-    
+
 def leader_team_dashboard(emp):
     connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
     cur = connection.cursor()
@@ -158,6 +173,6 @@ def leader_task_dashboard(emp):
     connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
     cur = connection.cursor()
 
-    return cur.execute(f"SELECT * FROM PEMPLOYEE WHERE PEMPLOYEE.USERNAME IN (SELECT PNORMAL.USERNAME FROM PNORMAL WHERE PNORMAL.TEAMID = (SELECT PTEAMLEADER.TEAMID FROM PTEAMLEADER WHERE PTEAMLEADER.USERNAME = '{emp.username}'))")
+    return cur.execute(f"SELECT TASKID, USERNAME, DEADLINE, DESCR, IMPORTANCE, PROGRESS FROM PTASK, PNORMAL WHERE PTASK.ASSIGNEDTO = PNORMAL.USERNAME AND PNORMAL.TEAMID = (SELECT PTEAMLEADER.TEAMID FROM PTEAMLEADER WHERE PTEAMLEADER.USERNAME = '{emp.username}')")
     
 
