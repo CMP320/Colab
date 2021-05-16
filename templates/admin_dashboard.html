@@ -1,0 +1,81 @@
+{% extends 'base_dash.html' %}
+
+{% block navlinks %}
+
+<button class="fs-5 pr-2 nav-link text-white active" data-bs-toggle="tab" href="#tasks" data-target="#tasks"
+    type="button" role="tab">
+    <span class="material-icons align-middle">task_alt</span>
+    Tasks
+</button>
+
+<button class="fs-5 pr-2 nav-link text-white" data-bs-toggle="tab" href="#team" data-target="#team" type="button"
+    role="tab">
+    <span class="material-icons align-middle">groups</span>
+    Teams
+</button>
+
+{% endblock navlinks %}
+
+{% block navtabs %}
+
+<div class="card border-primary mb-3 tab-pane active in" role="tabpanel" id="tasks">
+    <div class="card-header text-primary h5 p-3">Tasks</div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table w-100 p-md-5">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center align-middle p-xl-3">ID</th>
+                        <th class="text-center align-middle p-xl-3">Deadline</th>
+                        <th class="text-center align-middle p-xl-3">Importance</th>
+                        <th class="text-center align-middle p-xl-3">Description</th>
+                        <th class="text-center align-middle p-xl-3">Assigned to</th>
+                        <th class="text-center align-middle p-xl-3">Progress</th>
+                    </tr>
+                </thead>
+                {% for task in tasks %}
+                <tr>
+                    <td class="text-center align-middle p-xl-3">
+                        {{ task.id }}
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <input type="text" onfocus="(this.type='date')" class="form-control bg-dark text-light" id="exp"
+                            value="{{ task.deadline.strftime('%d/%m/%Y') }}" name="deadline" required>
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <select class="form-select bg-dark text-light">
+                            <option value="0" {% if task.importance == 0 %}
+                                selected
+                            {% endif %}>Low</option>
+                            <option value="1" {% if task.importance == 1 %}
+                            selected
+                        {% endif %}>Medium</option>
+                            <option value="2" {% if task.importance == 2 %}
+                            selected
+                        {% endif %}>High</option>
+                        </select>
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <div contenteditable>{{ task.description }}</div>
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <div contenteditable>{{ task.assignedto }}</div>
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <div contenteditable>{{ ["Assigned", "In Progress", "Completed"][task.progress] }}</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card border-primary mb-3 tab-pane in" role="tabpanel" id="team">
+    <div class="card-header text-primary h5 p-3">Team</div>
+    <div class="card-body">
+
+    </div>
+</div>
+
+{% endblock navtabs %}

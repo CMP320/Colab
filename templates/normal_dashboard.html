@@ -29,28 +29,21 @@
                     {{task.deadline.strftime('%d-%m-%y')}}</strong>
                 <ul class="card-body">
                     <li>Priority: 
-                    {% if task.imp == 0 %}
+                    {% if task.importance == 0 %}
                     Low
-                    {% elif task.imp == 1 %}
+                    {% elif task.importance == 1 %}
                     Normal
                     {% else %}
                     High
                     {% endif %}</li>
                     <br>
-                    <li>Details: {{task.descr}}</li>
+                    <li>Details: {{task.description}}</li>
                     <br>
-                    <li>Status: 
-                    {% if task.prog == 0 %}
-                    Assigned
-                    {% elif task.imp == 1 %}
-                    In progress
-                    {% else %}
-                    Complete
-                    {% endif %}</li>
+                    <li>Status: {{ ["Assigned", "In Progress", "Completed"][task.progress] }}</li>
 
                 </ul>
                 <button class="btn btn-light text-primary"
-                    onclick="startOrComplete('{{task.id}}', '{{task.prog}}')">
+                    onclick="startOrComplete('{{task.id}}', '{{task.progress}}')">
                     <span class="material-icons align-middle">done</span>
                     Start
                 </button>
@@ -72,28 +65,21 @@
                     {{task.deadline.strftime('%d-%m-%y')}}</strong>
                 <ul class="card-body">
                     <li>Priority: 
-                        {% if task.imp == 0 %}
+                        {% if task.importance == 0 %}
                         Low
-                        {% elif task.imp == 1 %}
+                        {% elif task.importance == 1 %}
                         Normal
                         {% else %}
                         High
                         {% endif %}</li>
                         <br>
-                        <li>Details: {{task.descr}}</li>
+                        <li>Details: {{task.description}}</li>
                         <br>
-                        <li>Status: 
-                        {% if task.prog == 0 %}
-                        Assigned
-                        {% elif task.imp == 1 %}
-                        In progress
-                        {% else %}
-                        Complete
-                        {% endif %}</li>
+                        <li>Status: {{ ["Assigned", "In Progress", "Completed"][task.progress] }}</li>
 
                 </ul>
                 <button class="btn btn-light text-primary"
-                    onclick="startOrComplete('{{task.id}}', '{{task.prog}}')">
+                    onclick="startOrComplete('{{task.id}}', '{{task.progress}}')">
                     <span class="material-icons align-middle">done_all</span>
                     Mark as Complete
                 </button>
@@ -115,24 +101,18 @@
                     {{task.deadline.strftime('%d-%m-%y')}}</strong>
                 <ul class="card-body">
                     <li>Priority: 
-                        {% if task.imp == 0 %}
+                        {% if task.importance == 0 %}
                         Low
-                        {% elif task.imp == 1 %}
+                        {% elif task.importance == 1 %}
                         Normal
                         {% else %}
                         High
                         {% endif %}</li>
                         <br>
-                        <li>Details: {{task.descr}}</li>
+                        <li>Details: {{task.description}}</li>
                         <br>
-                        <li>Status: 
-                        {% if task.prog == 0 %}
-                        Assigned
-                        {% elif task.imp == 1 %}
-                        In progress
-                        {% else %}
-                        Complete
-                        {% endif %}</li>
+                        <li>Status: {{ ["Assigned", "In Progress", "Completed"][task.progress] }}
+                        </li>
                 </ul>
             </div>
 

@@ -26,10 +26,11 @@ class Employee:
 @dataclass()
 class Task:
     id : int
-    deadline : str
-    imp : str
-    descr: str
-    prog: int
+    deadline : dt
+    importance : int
+    description : str
+    assignedto : str
+    progress : int
 
 @app.route('/',methods=['GET','POST'])
 @app.route('/login', methods=['GET','POST'])
@@ -91,7 +92,11 @@ def dashboard():
         return redirect(url_for('login'))
     if emp.type == 'admin':
         print('admin')
-        return render_template('dashboard.html', user=emp)
+        connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+        cur = connection.cursor()
+        res = cur.execute(f"select * from ptask")
+        tasks = [Task(*task) for task in list(res)]
+        return render_template('admin_dashboard.html', user=emp, tasks=tasks)
     if emp.type == 'teamleader':
         print('team leader')
         return render_template('dashboard.html', user=emp)
@@ -99,11 +104,11 @@ def dashboard():
         # print('normal')
         connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
         cur = connection.cursor()
-        res = cur.execute(f"select taskid, deadline, importance, descr, progress from ptask where assignedto = '{emp.username}'")
+        res = cur.execute(f"select taskid, deadline, importance, descr, assignedto, progress from ptask where assignedto = '{emp.username}'")
         tasks = [Task(*r) for r in list(res)]
-        assignedTasks = [t for t in tasks if t.prog==0]
-        inprogTasks = [t for t in tasks if t.prog==1]
-        complTasks = [t for t in tasks if t.prog==2]
+        assignedTasks = [t for t in tasks if t.progress==0]
+        inprogTasks = [t for t in tasks if t.progress==1]
+        complTasks = [t for t in tasks if t.progress==2]
         # print(tasks)
         cur = connection.cursor()
         res = cur.execute(f"select name from pemployee where username in (select username from pnormal where teamID = (select teamID from pnormal where username='{emp.username}'))")
