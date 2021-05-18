@@ -143,7 +143,7 @@
         xhr.send(JSON.stringify(data));
 
         setTimeout(function () {
-            $('#tasks').load(document.URL + ' #tasks');
+            $("#tasks").load(location.href+" #tasks>*","");
         }, 500);
     }
 

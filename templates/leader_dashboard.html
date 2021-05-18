@@ -33,8 +33,8 @@
                 <div class="modal-body text-center">
                     <div class="col-md">
                         <label for="name" class="form-label">Deadline</label>
-                        <input type="text" class="form-control bg-dark text-light deadline"
-                                placeholder="dd MONTH, yyyy" name="deadline" required id="deadline">
+                        <input type="text" class="form-control bg-dark text-light deadline" placeholder="dd MONTH, yyyy"
+                            name="deadline" required id="deadline">
                     </div>
                     <div class="col-md">
                         <label for="price" class="form-label">Priority</label>
@@ -46,20 +46,19 @@
                     </div>
                     <div class="col-md">
                         <label for="description" class="form-label">Description</label>
-                        <input type="text" class="form-control bg-dark text-light" id="descr" placeholder="Description of the task"
-                            name="descr" required>
+                        <input type="text" class="form-control bg-dark text-light" id="descr"
+                            placeholder="Description of the task" name="descr" required>
                     </div>
                     <div class="col-md">
                         <label for="assignto" class="form-label">Assign to</label>
-                        <select class="form-select bg-dark text-light" id="assignto" name="assignto"> 
+                        <select class="form-select bg-dark text-light" id="assignto" name="assignto">
                             {% for emp in res %}
-                            <option value="{{emp.username}}" {% if emp.username == res[0].username %}
-                                selected
-                            {% endif %}>{{emp.name}} ({{ emp.username }})</option>
+                            <option value="{{emp.username}}" {% if emp.username==res[0].username %} selected {% endif
+                                %}>{{emp.name}} ({{ emp.username }})</option>
                             {% endfor %}
                         </select>
                     </div>
-                    
+
                 </div>
 
                 <div class="modal-footer text-center">
@@ -74,13 +73,14 @@
 </div>
 
 
-<button class="fs-5 pr-2 nav-link text-white active" data-bs-toggle="tab" href="#tasks" data-target="#tasks" type="button"
-    role="tab">
+<button class="fs-5 pr-2 nav-link text-white active" data-bs-toggle="tab" href="#tasks" data-target="#tasks"
+    type="button" role="tab">
     <span class="material-icons align-middle">task_alt</span>
     Tasks
 </button>
 
-<button class="fs-5 pr-2 nav-link text-white" data-bs-toggle="tab" href="#team" data-target="#team" type="button" role="tab">
+<button class="fs-5 pr-2 nav-link text-white" data-bs-toggle="tab" href="#team" data-target="#team" type="button"
+    role="tab">
     <span class="material-icons align-middle">groups</span>
     Team
 </button>
@@ -92,77 +92,69 @@
 <div class="card border-primary mb-3 tab-pane active in" role="tabpanel" id="tasks">
     <div class="card-header text-primary h5 p-3">Tasks</div>
     <div class="card-body">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table w-100 p-md-5">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="text-center align-middle p-xl-3">Task ID</th>
-                            <th class="text-center align-middle p-xl-3">Assigned To</th>
-                            <th class="text-center align-middle p-xl-3">Deadline</th>
-                            <th class="text-center align-middle p-xl-3">Description</th>
-                            <th class="text-center align-middle p-xl-3">Importance</th>
-                            <th class="text-center align-middle p-xl-3">Progress</th>
-                            <th class="text-center align-middle p-xl-3">Actions</th>
-                        </tr>
-                    </thead>
-                    {% for task in tasks %}
+        <div class="table-responsive">
+            <table class="table w-100 p-md-5">
+                <thead class="table-light">
                     <tr>
-                        <td class="text-center align-middle p-xl-3">
-                            {{ task.taskid }}
-                        </td>
-                        <td class="text-center align-middle p-xl-3">
-                            <select class="form-select bg-dark text-light" id="asst{{task.taskid}}">
-                                {% for emp in res %}
-                                <option value="{{emp.username}}" {% if task.username == emp.username %}
-                                    selected
-                                {% endif %}>{{emp.name}} ({{ emp.username }})</option>
-                                {% endfor %}
-                            </select>
-                        </td>
-                        <td class="text-center align-middle p-xl-3" id="gg">
-                            <input type="text" class="form-control bg-dark text-light deadline"
-                                value="{{ task.deadline.strftime('%d %B, %Y') }}" name="deadline" required id="dlt{{task.taskid}}">
-                        </td>
-                        <td class="text-center align-middle p-xl-3">
-                            <div contenteditable id="descrt{{task.taskid}}">{{ task.desc }}</div>
-                        </td>
-                        <td class="text-center align-middle p-xl-3">
-                            <select class="form-select bg-dark text-light" id="impt{{task.taskid}}">
-                                <option value="0" {% if task.imp == 0 %}
-                                    selected
-                                {% endif %}>Low</option>
-                                <option value="1" {% if task.imp == 1 %}
-                                selected
-                            {% endif %}>Medium</option>
-                                <option value="2" {% if task.imp == 2 %}
-                                selected
-                            {% endif %}>High</option>
-                            </select>
-                        </td>
-                        <td class="text-center align-middle p-xl-3">
-                            <div>{{ ["Assigned", "In Progress", "Completed"][task.progress] }}</div>
-                        </td>
-                        <td class="text-center align-middle p-xl-3">
-                            <a class="text-warning fw-bold" href="" data-bs-toggle="modal"
-                                onclick="showTaskConfirm('t'+'{{ task.taskid }}')" data-bs-target="#confirmTaskModal">
-                                <span class="material-icons align-middle">
-                                    update
-                                </span>
-                                Update
-                            </a>
-                        </td>
+                        <th class="text-center align-middle p-xl-3">Task ID</th>
+                        <th class="text-center align-middle p-xl-3">Assigned To</th>
+                        <th class="text-center align-middle p-xl-3">Deadline</th>
+                        <th class="text-center align-middle p-xl-3">Description</th>
+                        <th class="text-center align-middle p-xl-3">Importance</th>
+                        <th class="text-center align-middle p-xl-3">Progress</th>
+                        <th class="text-center align-middle p-xl-3">Actions</th>
                     </tr>
-                    {% endfor %}
-                </table>
-            </div>
-            <br>
-            <div class="text-center">
-                <a href="#" data-bs-toggle="modal" data-bs-target="#addTaskModal" class="btn btn-primary w-50">
-                    <span class="material-icons align-middle">library_add</span>&emsp;
-                    Add Task
-                </a>
-            </div>
+                </thead>
+                {% for task in tasks %}
+                <tr>
+                    <td class="text-center align-middle p-xl-3">
+                        {{ task.id }}
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <select class="form-select bg-dark text-light" id="asst{{task.id}}">
+                            {% for emp in res %}
+                            <option value="{{emp.username}}" {% if task.assignedto==emp.username %} selected {% endif
+                                %}>{{emp.name}} ({{ emp.username }})</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="text-center align-middle p-xl-3" id="gg">
+                        <input type="text" class="form-control bg-dark text-light deadline"
+                            value="{{ task.deadline.strftime('%d %B, %Y') }}" name="deadline" required
+                            id="dlt{{task.id}}">
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <div contenteditable id="descrt{{task.id}}">{{ task.description }}</div>
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <select class="form-select bg-dark text-light" id="impt{{ task.id }}">
+                            <option value="0" {% if task.importance==0 %} selected {% endif %}>Low</option>
+                            <option value="1" {% if task.importance==1 %} selected {% endif %}>Medium</option>
+                            <option value="2" {% if task.importance==2 %} selected {% endif %}>High</option>
+                        </select>
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <div>{{ ["Assigned", "In Progress", "Completed"][task.progress] }}</div>
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <a class="text-warning fw-bold" href="" data-bs-toggle="modal"
+                            onclick="showTaskConfirm('t'+'{{ task.id }}')" data-bs-target="#confirmTaskModal">
+                            <span class="material-icons align-middle">
+                                update
+                            </span>
+                            Update
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <br>
+        <div class="text-center">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#addTaskModal" class="btn btn-primary w-50">
+                <span class="material-icons align-middle">library_add</span>&emsp;
+                Add Task
+            </a>
         </div>
     </div>
 </div>
@@ -220,7 +212,7 @@
         xhr.send(JSON.stringify(data));
 
         setTimeout(function () {
-            $('#tasks').load(document.URL + ' #tasks');
+            $("#tasks").load(location.href+" #tasks>*","");
         }, 500);
     }
     function updateTask(taskID) { // I should rename this
@@ -228,6 +220,7 @@
         var xhr = new XMLHttpRequest();
         var e = document.getElementById("imp" + taskID);
         var e2 = document.getElementById("ass" + taskID);
+        console.log(e, e2);
         var data = { "taskID": taskID[1], "deadline": document.getElementById("dl" + taskID).value, "description": document.getElementById("descr" + taskID).innerHTML, "importance": e.options[e.selectedIndex].value, "assignedto": e2.options[e2.selectedIndex].value };
         console.log(data);
         xhr.open("POST", "/updateTask", true);
@@ -235,7 +228,7 @@
         xhr.send(JSON.stringify(data));
 
         setTimeout(function () {
-            $('#tasks').load(document.URL + ' #tasks');
+            $("#tasks").load(location.href+" #tasks>*","");
         }, 500);
     }
 
@@ -245,4 +238,3 @@
 </script>
 
 {% endblock navtabs %}
-

@@ -36,15 +36,6 @@ class Task:
     normal_users : list = None
     team_name : str = ""
 
-@dataclass()
-class EmpTask:
-    taskid : int
-    username : str
-    deadline : str
-    desc : str
-    imp : int
-    progress : int
-
 @app.route('/',methods=['GET','POST'])
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -128,7 +119,7 @@ def dashboard():
         
         task = []
         for re in list(leader_task_dashboard(emp)):
-            task.append(EmpTask(*re))
+            task.append(Task(*re))
 
         connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
         cur = connection.cursor()
@@ -224,6 +215,6 @@ def leader_task_dashboard(emp):
     connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
     cur = connection.cursor()
 
-    return cur.execute(f"SELECT TASKID, USERNAME, DEADLINE, DESCR, IMPORTANCE, PROGRESS FROM PTASK, PNORMAL WHERE PTASK.ASSIGNEDTO = PNORMAL.USERNAME AND PNORMAL.TEAMID = (SELECT PTEAMLEADER.TEAMID FROM PTEAMLEADER WHERE PTEAMLEADER.USERNAME = '{emp.username}') order by taskID desc")
+    return cur.execute(f"SELECT TASKID, DEADLINE, IMPORTANCE, DESCR, USERNAME, PROGRESS FROM PTASK, PNORMAL WHERE PTASK.ASSIGNEDTO = PNORMAL.USERNAME AND PNORMAL.TEAMID = (SELECT PTEAMLEADER.TEAMID FROM PTEAMLEADER WHERE PTEAMLEADER.USERNAME = '{emp.username}')")
     
 

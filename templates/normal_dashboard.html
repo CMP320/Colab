@@ -26,7 +26,7 @@
 
             <div class="card bg-primary text-light p-3">
                 <strong class="card-title">Task #{{task.id}}<br>Deadline:
-                    {{task.deadline.strftime('%d %B, %y')}}</strong>
+                    {{task.deadline.strftime('%d %B, %Y')}}</strong>
                 <ul class="card-body">
                     <li>Priority: 
                     {% if task.importance == 0 %}
@@ -62,7 +62,7 @@
 
             <div class="card bg-primary text-light p-3">
                 <strong class="card-title">Task #{{task.id}}<br>Deadline:
-                    {{task.deadline.strftime('%d %B, %y')}}</strong>
+                    {{task.deadline.strftime('%d %B, %Y')}}</strong>
                 <ul class="card-body">
                     <li>Priority: 
                         {% if task.importance == 0 %}
@@ -98,7 +98,7 @@
 
             <div class="card bg-primary text-light p-3">
                 <strong class="card-title">Task #{{task.id}}<br>Deadline:
-                    {{task.deadline.strftime('%d %B, %y')}}</strong>
+                    {{task.deadline.strftime('%d %B, %Y')}}</strong>
                 <ul class="card-body">
                     <li>Priority: 
                         {% if task.importance == 0 %}
@@ -149,14 +149,14 @@ function startOrComplete(taskID, currProg) {
 
 
         setTimeout(function () {
-            $('#tasks').load(document.URL + ' #tasks');
+            $("#tasks").load(location.href+" #tasks>*","");
         }, 500);
 
 
     }
 
     var intervalId = setInterval(function () {
-        $('#tasks').load(document.URL + ' #tasks')
+        $("#tasks").load(location.href+" #tasks>*","");
     }, 2000);
 
 </script>
