@@ -42,6 +42,110 @@
     </div>
 </div>
 
+<div class="modal fade" id="addTeamModal" tabindex="-1" aria-labelledby="addTeamModalLabel" aria-none="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content bg-secondary">
+            <div class="modal-header">
+                <h5 class="modal-title h5 text-primary" id="exampleModalLabel2">Create a new team</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" id=newTeamForm>
+                <div class="modal-body text-center">
+                    <div class="col-md">
+                        <label for="tname" class="form-label">Team Name</label>
+                        <input type="text" class="form-control bg-dark text-light" id="tname" placeholder="Teamname"
+                            name="tname" required>
+                    </div>
+                </div>
+
+                <div class="modal-footer text-center">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>&nbsp;
+                    <button class="btn btn-primary w-75" type="submit" data-bs-dismiss="modal" onclick="addTeam()">
+                        Create Team
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-none="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content bg-secondary">
+            <div class="modal-header">
+                <h5 class="modal-title h5 text-primary" id="exampleModalLabel2">Add new Employee</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" id=newEmployeeForm>
+                <div class="modal-body text-center">
+                    <div class="col-md">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control bg-dark text-light" id="username" placeholder="Username"
+                            name="username" required>
+                    </div>
+                    <div class="col-md">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control bg-dark text-light" id="name" placeholder="Employee Name"
+                            name="name" required>
+                    </div>
+                    <div class="col-md">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control bg-dark text-light" id="password"
+                            placeholder="Password" name="password" required>
+                    </div>
+                    <div class="col-md">
+                        <label for="type" class="form-label">Type</label>
+                        <select class="form-select bg-dark text-light" id="type" name="type" onchange="changeFieldVisibility(this);">
+                            <option value="default" selected>Select a type</option>
+                            <option value="teamleader">Team Leader</option>
+                            <option value="normal">Normal</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="col-md" id="teamdiv" style="display: none !important">
+                        <label for="team" class="form-label">Team</label>
+                        <select class="form-select bg-dark text-light" id="team" name="team">
+                            {% for team in teams %}
+                            <option value="{{ team.id }}">{{ team.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md">
+                        <label for="hiredate" class="form-label">Hiredate</label>
+                        <input type="text" class="form-control bg-dark text-light deadline"
+                            placeholder="dd MONTH, yyyy" name="hiredate" required id="hiredate">
+                    </div>
+                    <div class="col-md">
+                        <label for="salary" class="form-label">Salary</label>
+                        <input type="text" class="form-control bg-dark text-light" id="salary" placeholder="Salary"
+                            name="salary" required>
+                    </div>
+                    <div class="col-md" id="bonusdiv" style="display: none !important">
+                        <label for="bonus" class="form-label">Bonus</label>
+                        <input type="text" class="form-control bg-dark text-light" id="bonus" placeholder="Bonus"
+                            name="bonus" required>
+                    </div>
+                    <div class="col-md" id="overtimediv" style="display: none !important">
+                        <label for="overtime" class="form-label">Overtime</label>
+                        <input type="text" class="form-control bg-dark text-light" id="overtime" placeholder="Overtime"
+                            name="overtime" required>
+                    </div>
+                </div>
+
+                <div class="modal-footer text-center">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary w-75" type="submit" data-bs-dismiss="modal" onclick="addEmployee()">
+                        Create Task
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
 <button class="fs-5 pr-2 nav-link text-white active" data-bs-toggle="tab" href="#logs" data-target="#logs" type="button"
     role="tab">
     <span class="material-icons align-middle">query_stats</span>
@@ -97,22 +201,24 @@
                         <div id="name{{ a.username }}" contenteditable>{{a.name}}</div>
                     </td>
 
-                    <td class="p-xl-3 fw-bold">
+                    <td class="p-xl-3 fw-bold align-middle">
                         <input type="password" class="form-control text-center align-middle bg-dark text-light fw-bold"
-                            name="password" id="" placeholder="Password" id="password{{ a.username }}">
+                            name="password" placeholder="Password" id="password{{ a.username }}">
                     </td>
-                    <td class="p-xl-3 fw-bold text-center align-middle">{{a.type}}</td>
+                    <td class="p-xl-3 fw-bold text-center align-middle" id="type{{ a.username }}">{{a.type}}</td>
                     <td class="text-center align-middle p-xl-3">
                         <input type="text"
                             class="form-control text-center align-middle bg-dark text-light fw-bold deadline"
-                            value="{{ a.hiredate.strftime('%d %B %Y') }}" name="hiredate" required id="hiredate{{ a.username }}">
+                            value="{{ a.hiredate.strftime('%d %B, %Y') }}" name="hiredate" required
+                            id="hiredate{{ a.username }}">
                     </td>
                     <td class="text-center align-middle p-xl-3 fw-bold">
                         <div contenteditable id="sal{{ a.username }}">{{a.sal}}</div>
                     </td>
                     <td class="text-center align-middle p-xl-3">
                         <a class="text-warning fw-bold" href="" data-bs-toggle="modal"
-                            onclick="showEmployeeConfirm('{{ a.username }}','/updateEmployee')" data-bs-target="#confirmEmployeeModal">
+                            onclick="showEmployeeConfirm('{{ a.username }}','/updateEmployee')"
+                            data-bs-target="#confirmEmployeeModal">
                             <span class="material-icons align-middle">
                                 update
                             </span>
@@ -120,7 +226,8 @@
                         </a>
                         &emsp;
                         <a class="text-danger fw-bold" href="" data-bs-toggle="modal"
-                            onclick="showEmployeeConfirm('{{ a.username }}','/deleteEmployee')" data-bs-target="#confirmEmployeeModal">
+                            onclick="showEmployeeConfirm('{{ a.username }}','/deleteEmployee')"
+                            data-bs-target="#confirmEmployeeModal">
                             <span class="material-icons align-middle">
                                 delete
                             </span>
@@ -133,9 +240,12 @@
             <br><br>
         </div>
         {% for team in teams %}
-        <div class="d-flex"><h4>Team&nbsp;</h4><h4 contenteditable>{{team.name}}</h4><div class="flex-grow-1" ></div>
+        <div class="d-flex">
+            <h4>Team&nbsp;</h4>
+            <h4 id="teamname{{ team.id }}" contenteditable>{{team.name}}</h4>
+            <div class="flex-grow-1"></div>
             <a class="text-warning fw-bold" href="" data-bs-toggle="modal"
-                onclick="showTaskConfirm('{{ team.name }}')" data-bs-target="#confirmTaskModal">
+                onclick="showEmployeeConfirm('{{ team.id }}','/updateTeamName')" data-bs-target="#confirmEmployeeModal">
                 <span class="material-icons align-middle">
                     update
                 </span>
@@ -156,6 +266,7 @@
                         <th class="text-center align-middle p-xl-3">Actions</th>
                     </tr>
                 </thead>
+                {% if team.leader %}
                 <tr>
                     <td class="text-center align-middle p-xl-3 fw-bold" id="username{{ team.leader.username }}">
                         {{team.leader.username}}
@@ -167,11 +278,12 @@
                         <input type="password" class="form-control text-center align-middle bg-dark text-light fw-bold"
                             name="password" id="password{{ team.leader.username }}" placeholder="Password">
                     </td>
-                    <td class="p-xl-3 fw-bold text-center align-middle">{{team.leader.type}}</td>
+                    <td class="p-xl-3 fw-bold text-center align-middle" id="type{{ team.leader.username }}">
+                        {{team.leader.type}}</td>
                     <td class="text-center align-middle p-xl-3">
                         <input type="text"
                             class="form-control text-center align-middle bg-dark text-light fw-bold deadline"
-                            value="{{ team.leader.hiredate.strftime('%d %B %Y') }}" name="hiredate" required
+                            value="{{ team.leader.hiredate.strftime('%d %B, %Y') }}" name="hiredate" required
                             id="hiredate{{ team.leader.username }}">
                     </td>
                     <td class="text-center align-middle p-xl-3 fw-bold">
@@ -179,7 +291,8 @@
                     </td>
                     <td class="text-center align-middle p-xl-3">
                         <a class="text-warning fw-bold" href="" data-bs-toggle="modal"
-                            onclick="showEmployeeConfirm('{{ team.leader.username }}')" data-bs-target="#confirmEmployeeModal">
+                            onclick="showEmployeeConfirm('{{ team.leader.username }}','/updateEmployee')"
+                            data-bs-target="#confirmEmployeeModal">
                             <span class="material-icons align-middle">
                                 update
                             </span>
@@ -187,7 +300,8 @@
                         </a>
                         &emsp;
                         <a class="text-danger fw-bold" href="" data-bs-toggle="modal"
-                            onclick="showEmployeeConfirm('{{ team.leader.username }}')" data-bs-target="#confirmEmployeeModal">
+                            onclick="showEmployeeConfirm('{{ team.leader.username }}', '/deleteEmployee')"
+                            data-bs-target="#confirmEmployeeModal">
                             <span class="material-icons align-middle">
                                 delete
                             </span>
@@ -195,31 +309,34 @@
                         </a>
                     </td>
                 </tr>
+                {% endif %}
                 {% for emp in team.normal_users %}
                 <tr>
-                    <td class="text-center align-middle p-xl-3">
+                    <td class="text-center align-middle p-xl-3" id="username{{ emp.username }}">
                         {{ emp.username }}
                     </td>
                     <td class="text-center align-middle p-xl-3">
-                        <div contenteditable>{{ emp.name }}</div>
+                        <div contenteditable id="name{{ emp.username }}">{{ emp.name }}</div>
                     </td>
-                    <td class="p-xl-3 fw-bold">
+                    <td class="p-xl-3 fw-bold align-middle">
                         <input type="password" class="form-control text-center align-middle bg-dark text-light"
-                            name="password" id="" placeholder="Password">
+                            name="password" id="password{{ emp.username }}" placeholder="Password">
                     </td>
-                    <td class="text-center align-middle p-xl-3">
+                    <td class="text-center align-middle p-xl-3" id="type{{ emp.username }}">
                         {{ emp.type }}
                     </td>
                     <td class="text-center align-middle p-xl-3">
                         <input type="text" class="form-control text-center align-middle bg-dark text-light deadline"
-                            value="{{ emp.hiredate.strftime('%d %B %Y') }}" name="hiredate" required id="hiredate">
+                            value="{{ emp.hiredate.strftime('%d %B, %Y') }}" name="hiredate" required
+                            id="hiredate{{ emp.username }}">
                     </td>
                     <td class="text-center align-middle p-xl-3">
-                        <div contenteditable>{{ emp.sal }}</div>
+                        <div id="sal{{ emp.username }}" contenteditable>{{ emp.sal }}</div>
                     </td>
                     <td class="text-center align-middle p-xl-3">
                         <a class="text-warning fw-bold" href="" data-bs-toggle="modal"
-                            onclick="showTaskConfirm('{{ emp.id }}')" data-bs-target="#confirmTaskModal">
+                            onclick="showEmployeeConfirm('{{ emp.username }}','/updateEmployee')"
+                            data-bs-target="#confirmEmployeeModal">
                             <span class="material-icons align-middle">
                                 update
                             </span>
@@ -227,7 +344,8 @@
                         </a>
                         &emsp;
                         <a class="text-danger fw-bold" href="" data-bs-toggle="modal"
-                            onclick="showTaskConfirm('{{ emp.id }}')" data-bs-target="#confirmTaskModal">
+                            onclick="showEmployeeConfirm('{{ emp.username }}','/deleteEmployee')"
+                            data-bs-target="#confirmEmployeeModal">
                             <span class="material-icons align-middle">
                                 delete
                             </span>
@@ -241,12 +359,12 @@
         <br><br>
         {% endfor %}
         <div class="d-flex justify-content-center">
-            <a href="#" data-bs-toggle="modal" data-bs-target="#addTaskModal" class="btn btn-primary w-25">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#addEmployeeModal" class="btn btn-primary w-25">
                 <span class="material-icons align-middle">person_add</span>&emsp;
                 Add Employee
             </a>
             &emsp;
-            <a href="#" data-bs-toggle="modal" data-bs-target="#addTaskModal" class="btn btn-primary w-25">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#addTeamModal" class="btn btn-primary w-25">
                 <span class="material-icons align-middle">person_add</span>&emsp;
                 Add Team
             </a>
@@ -325,11 +443,61 @@
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script type="text/javascript">
 
-    console.log('{{ teams }}')
+    // console.log('{{ teams }}')
 
     $('.deadline').datepicker({
         dateFormat: 'dd MM, yy',
     });
+
+    function changeFieldVisibility(type) {
+        if (type.selectedIndex == 1) {
+            document.getElementById("teamdiv").style.display = "block"
+            document.getElementById("bonusdiv").style.display = "block"
+            document.getElementById("overtimediv").style.display = "none"
+        }
+        else if (type.selectedIndex == 2) {
+            document.getElementById("teamdiv").style.display = "block"
+            document.getElementById("bonusdiv").style.display = "none"
+            document.getElementById("overtimediv").style.display = "block"
+        }
+        else {
+            document.getElementById("teamdiv").style.display = "none"
+            document.getElementById("bonusdiv").style.display = "none"
+            document.getElementById("overtimediv").style.display = "none"
+        }
+    }
+
+    function addEmployee() {
+        var xhr = new XMLHttpRequest();
+        var data = $('#newEmployeeForm').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        console.log(data);
+        xhr.open("POST", "/addEmployee", true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify(data));
+
+        setTimeout(function () {
+            $("#employees").load(location.href + " #employees>*", "");
+        }, 500);
+    }
+
+    function addTeam() {
+        var xhr = new XMLHttpRequest();
+        var data = $('#newTeamForm').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        console.log(data);
+        xhr.open("POST", "/addTeam", true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify(data));
+
+        setTimeout(function () {
+            $("#employees").load(location.href + " #employees>*", "");
+        }, 500);
+    }
 
     function updateTask(username) {
         console.log(username);
@@ -347,21 +515,24 @@
         }, 500);
     }
 
-    function updateTask(unurl) {
+    function updateorDeleteEmployee(unurl) {
         console.log(unurl);
-        let username = unurl.split(",")[0]        
+        let username = unurl.split(",")[0]
         let url = unurl.split(",")[1]
+        if (url === "/updateTeamName") {
+            data = { "teamid": username, "teamname": document.getElementById('teamname' + username).innerHTML };
+        }
+        else {
+            var data = { "username": username, "name": document.getElementById("name" + username).innerHTML, "type": document.getElementById("type" + username).innerHTML, "password": document.getElementById("password" + username).value, "hiredate": document.getElementById("hiredate" + username).value, "salary": document.getElementById("sal" + username).innerHTML };
+        }
         var xhr = new XMLHttpRequest();
-        var e = document.getElementById("imp" + username);
-        var e2 = document.getElementById("asn" + username);
-        var data = { "username": username, "name": $("#name"+username).val() , "hiredate": document.getElementById("hiredate" + username).value, "description": document.getElementById("desc" + username).innerHTML, "importance": e.options[e.selectedIndex].value, "assignedto": e2.options[e2.selectedIndex].value };
         console.log(data);
         xhr.open("POST", url, true);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(JSON.stringify(data));
 
         setTimeout(function () {
-            $("#tasks").load(location.href + " #tasks>*", "");
+            $("#employees").load(location.href + " #employees>*", "");
         }, 500);
     }
 
@@ -370,7 +541,7 @@
     }
 
     function showEmployeeConfirm(username, url) {
-        $('#confirmEmployee').html(username+","+url);
+        $('#confirmEmployee').html(username + "," + url);
     }
 </script>
 
