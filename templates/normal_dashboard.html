@@ -26,7 +26,7 @@
 
             <div class="card bg-primary text-light p-3">
                 <strong class="card-title">Task #{{task.id}}<br>Deadline:
-                    {{task.deadline.strftime('%d-%m-%y')}}</strong>
+                    {{task.deadline.strftime('%d %B, %y')}}</strong>
                 <ul class="card-body">
                     <li>Priority: 
                     {% if task.importance == 0 %}
@@ -62,7 +62,7 @@
 
             <div class="card bg-primary text-light p-3">
                 <strong class="card-title">Task #{{task.id}}<br>Deadline:
-                    {{task.deadline.strftime('%d-%m-%y')}}</strong>
+                    {{task.deadline.strftime('%d %B, %y')}}</strong>
                 <ul class="card-body">
                     <li>Priority: 
                         {% if task.importance == 0 %}
@@ -98,7 +98,7 @@
 
             <div class="card bg-primary text-light p-3">
                 <strong class="card-title">Task #{{task.id}}<br>Deadline:
-                    {{task.deadline.strftime('%d-%m-%y')}}</strong>
+                    {{task.deadline.strftime('%d %B, %y')}}</strong>
                 <ul class="card-body">
                     <li>Priority: 
                         {% if task.importance == 0 %}

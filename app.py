@@ -33,6 +33,8 @@ class Task:
     description : str
     assignedto : str
     progress : int
+    normal_users : list = None
+    team_name : str = ""
 
 @dataclass()
 class EmpTask:
@@ -103,15 +105,23 @@ def dashboard():
         return redirect(url_for('login'))
 
     if emp.type == 'admin':
-        print('admin')
+        # print('admin')
         connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
         cur = connection.cursor()
-        res = cur.execute(f"select * from ptask")
+        res = cur.execute("select * from ptask")
         tasks = [Task(*task) for task in list(res)]
-        return render_template('admin_dashboard.html', user=emp, tasks=tasks)
+        for task in tasks:
+            res = cur.execute(f"select teamid from (SELECT TEAMID, PLOGIN.USERNAME u FROM PLOGIN, PNORMAL WHERE PLOGIN.USERNAME = PNORMAL.USERNAME) where u = '{task.assignedto}'")
+            teamid = list(res)[0][0]
+            res = cur.execute(f"select teamname from pteam where teamid={teamid}")
+            task.team_name = list(res)[0][0]
+            res = cur.execute(f"select u from (SELECT TEAMID, PLOGIN.USERNAME u FROM PLOGIN, PNORMAL WHERE PLOGIN.USERNAME = PNORMAL.USERNAME) where teamid = {teamid}")
+            task.normal_users = [user[0] for user in list(res)]
+        
+        return render_template('admin_dashboard.html', user=emp, tasks=tasks, task_teams={t.team_name for t in tasks})
 
     if emp.type == 'teamleader':
-        print('team leader')
+        # print('team leader')
         team = []
         for re in list(leader_team_dashboard(emp)):
             team.append(Employee(*re))
@@ -165,7 +175,7 @@ def updateTask():
     assignedto = request.json['assignedto']
     connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
     cur = connection.cursor()
-    res = cur.execute(f"update ptask set assignedTo = '{assignedto}', deadline = TO_DATE('{deadline}', 'yyyy-mm-dd'), importance = {imp}, descr = '{descr}'  where taskID = {taskID}")
+    res = cur.execute(f"update ptask set assignedTo = '{assignedto}', deadline = TO_DATE('{deadline}', 'dd MONTH, yyyy'), importance = {imp}, descr = '{descr}'  where taskID = {taskID}")
     connection.commit()
     return 'success'
 
@@ -182,7 +192,7 @@ def addTask():
     imp = int(request.json['imp'])
     assignedto = request.json['assignto']
     cur = connection.cursor()
-    res = cur.execute(f"insert into ptask values ({taskID}, TO_DATE('{deadline}', 'yyyy-mm-dd'), {imp}, '{descr}', '{assignedto}', 0)")
+    res = cur.execute(f"insert into ptask values ({taskID}, TO_DATE('{deadline}', 'dd MONTH, yyyy'), {imp}, '{descr}', '{assignedto}', 0)")
     connection.commit()
     return 'success'
 
