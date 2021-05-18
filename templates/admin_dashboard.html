@@ -22,20 +22,40 @@
     </div>
 </div>
 
+<div class="modal fade" id="confirmEmployeeModal" tabindex="-1" aria-labelledby="confirmEmployeeModal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-secondary">
+            <div class="modal-header">
+                <h5 class="modal-title h4 text-danger">Confirm changes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to make these changes?</p>
+                <div class="visually-hidden" id="confirmEmployee"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <a type="button" class="btn btn-danger text-white" data-bs-dismiss="modal"
+                    onclick="updateorDeleteEmployee(''+$('#confirmEmployee').html())">Proceed</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <button class="fs-5 pr-2 nav-link text-white active" data-bs-toggle="tab" href="#logs" data-target="#logs" type="button"
     role="tab">
-    <span class="material-icons align-middle">groups</span>
+    <span class="material-icons align-middle">query_stats</span>
     Logistics
 </button>
 
-<button class="fs-5 pr-2 nav-link text-white" data-bs-toggle="tab" href="#team" data-target="#team" type="button"
-    role="tab">
-    <span class="material-icons align-middle">groups</span>
-    Teams
+<button class="fs-5 pr-2 nav-link text-white" data-bs-toggle="tab" href="#employees" data-target="#employees"
+    type="button" role="tab">
+    <span class="material-icons align-middle">manage_accounts</span>
+    Employees
 </button>
 
-<button class="fs-5 pr-2 nav-link text-white" data-bs-toggle="tab" href="#tasks" data-target="#tasks"
-    type="button" role="tab">
+<button class="fs-5 pr-2 nav-link text-white" data-bs-toggle="tab" href="#tasks" data-target="#tasks" type="button"
+    role="tab">
     <span class="material-icons align-middle">task_alt</span>
     Tasks
 </button>
@@ -51,10 +71,186 @@
     </div>
 </div>
 
-<div class="card border-primary mb-3 tab-pane in" role="tabpanel" id="team">
-    <div class="card-header text-primary h5 p-3">Teams</div>
+<div class="card border-primary mb-3 tab-pane in" role="tabpanel" id="employees">
+    <div class="card-header text-primary h5 p-3">Manage Employees</div>
     <div class="card-body">
+        <h4>Admin</h4>
+        <div class="table-responsive">
+            <table class="table w-100 p-md-5">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center align-middle p-xl-3">Username</th>
+                        <th class="text-center align-middle p-xl-3">Name</th>
+                        <th class="text-center align-middle p-xl-3">Password</th>
+                        <th class="text-center align-middle p-xl-3">Type</th>
+                        <th class="text-center align-middle p-xl-3">Hiredate</th>
+                        <th class="text-center align-middle p-xl-3">Salary</th>
+                        <th class="text-center align-middle p-xl-3">Actions</th>
+                    </tr>
+                </thead>
+                {% for a in admin %}
+                <tr>
+                    <td class="text-center align-middle p-xl-3 fw-bold" id="username{{ a.username }}">
+                        {{a.username}}
+                    </td>
+                    <td class="text-center align-middle p-xl-3 fw-bold">
+                        <div id="name{{ a.username }}" contenteditable>{{a.name}}</div>
+                    </td>
 
+                    <td class="p-xl-3 fw-bold">
+                        <input type="password" class="form-control text-center align-middle bg-dark text-light fw-bold"
+                            name="password" id="" placeholder="Password" id="password{{ a.username }}">
+                    </td>
+                    <td class="p-xl-3 fw-bold text-center align-middle">{{a.type}}</td>
+                    <td class="text-center align-middle p-xl-3">
+                        <input type="text"
+                            class="form-control text-center align-middle bg-dark text-light fw-bold deadline"
+                            value="{{ a.hiredate.strftime('%d %B %Y') }}" name="hiredate" required id="hiredate{{ a.username }}">
+                    </td>
+                    <td class="text-center align-middle p-xl-3 fw-bold">
+                        <div contenteditable id="sal{{ a.username }}">{{a.sal}}</div>
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <a class="text-warning fw-bold" href="" data-bs-toggle="modal"
+                            onclick="showEmployeeConfirm('{{ a.username }}','/updateEmployee')" data-bs-target="#confirmEmployeeModal">
+                            <span class="material-icons align-middle">
+                                update
+                            </span>
+                            Update
+                        </a>
+                        &emsp;
+                        <a class="text-danger fw-bold" href="" data-bs-toggle="modal"
+                            onclick="showEmployeeConfirm('{{ a.username }}','/deleteEmployee')" data-bs-target="#confirmEmployeeModal">
+                            <span class="material-icons align-middle">
+                                delete
+                            </span>
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            <br><br>
+        </div>
+        {% for team in teams %}
+        <div class="d-flex"><h4>Team&nbsp;</h4><h4 contenteditable>{{team.name}}</h4><div class="flex-grow-1" ></div>
+            <a class="text-warning fw-bold" href="" data-bs-toggle="modal"
+                onclick="showTaskConfirm('{{ team.name }}')" data-bs-target="#confirmTaskModal">
+                <span class="material-icons align-middle">
+                    update
+                </span>
+                Update
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table w-100 p-md-5">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center align-middle p-xl-3">Username</th>
+                        <th class="text-center align-middle p-xl-3">Name</th>
+                        <th class="text-center align-middle p-xl-3">Password</th>
+                        <th class="text-center align-middle p-xl-3">Type</th>
+                        <th class="text-center align-middle p-xl-3">Hiredate</th>
+                        <th class="text-center align-middle p-xl-3">Salary</th>
+                        <th class="text-center align-middle p-xl-3">Actions</th>
+                    </tr>
+                </thead>
+                <tr>
+                    <td class="text-center align-middle p-xl-3 fw-bold" id="username{{ team.leader.username }}">
+                        {{team.leader.username}}
+                    </td>
+                    <td class="text-center align-middle p-xl-3 fw-bold">
+                        <div id="name{{ team.leader.username }}" contenteditable>{{team.leader.name}}</div>
+                    </td>
+                    <td class="p-xl-3 fw-bold align-middle">
+                        <input type="password" class="form-control text-center align-middle bg-dark text-light fw-bold"
+                            name="password" id="password{{ team.leader.username }}" placeholder="Password">
+                    </td>
+                    <td class="p-xl-3 fw-bold text-center align-middle">{{team.leader.type}}</td>
+                    <td class="text-center align-middle p-xl-3">
+                        <input type="text"
+                            class="form-control text-center align-middle bg-dark text-light fw-bold deadline"
+                            value="{{ team.leader.hiredate.strftime('%d %B %Y') }}" name="hiredate" required
+                            id="hiredate{{ team.leader.username }}">
+                    </td>
+                    <td class="text-center align-middle p-xl-3 fw-bold">
+                        <div id="sal{{ team.leader.username }}" contenteditable>{{team.leader.sal}}</div>
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <a class="text-warning fw-bold" href="" data-bs-toggle="modal"
+                            onclick="showEmployeeConfirm('{{ team.leader.username }}')" data-bs-target="#confirmEmployeeModal">
+                            <span class="material-icons align-middle">
+                                update
+                            </span>
+                            Update
+                        </a>
+                        &emsp;
+                        <a class="text-danger fw-bold" href="" data-bs-toggle="modal"
+                            onclick="showEmployeeConfirm('{{ team.leader.username }}')" data-bs-target="#confirmEmployeeModal">
+                            <span class="material-icons align-middle">
+                                delete
+                            </span>
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+                {% for emp in team.normal_users %}
+                <tr>
+                    <td class="text-center align-middle p-xl-3">
+                        {{ emp.username }}
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <div contenteditable>{{ emp.name }}</div>
+                    </td>
+                    <td class="p-xl-3 fw-bold">
+                        <input type="password" class="form-control text-center align-middle bg-dark text-light"
+                            name="password" id="" placeholder="Password">
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        {{ emp.type }}
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <input type="text" class="form-control text-center align-middle bg-dark text-light deadline"
+                            value="{{ emp.hiredate.strftime('%d %B %Y') }}" name="hiredate" required id="hiredate">
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <div contenteditable>{{ emp.sal }}</div>
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <a class="text-warning fw-bold" href="" data-bs-toggle="modal"
+                            onclick="showTaskConfirm('{{ emp.id }}')" data-bs-target="#confirmTaskModal">
+                            <span class="material-icons align-middle">
+                                update
+                            </span>
+                            Update
+                        </a>
+                        &emsp;
+                        <a class="text-danger fw-bold" href="" data-bs-toggle="modal"
+                            onclick="showTaskConfirm('{{ emp.id }}')" data-bs-target="#confirmTaskModal">
+                            <span class="material-icons align-middle">
+                                delete
+                            </span>
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <br><br>
+        {% endfor %}
+        <div class="d-flex justify-content-center">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#addTaskModal" class="btn btn-primary w-25">
+                <span class="material-icons align-middle">person_add</span>&emsp;
+                Add Employee
+            </a>
+            &emsp;
+            <a href="#" data-bs-toggle="modal" data-bs-target="#addTaskModal" class="btn btn-primary w-25">
+                <span class="material-icons align-middle">person_add</span>&emsp;
+                Add Team
+            </a>
+        </div>
     </div>
 </div>
 
@@ -62,64 +258,65 @@
     <div class="card-header text-primary h5 p-3">Tasks</div>
     <div class="card-body">
         {% for team in task_teams %}
-            <h4>{{ team }}</h4>
-            <div class="table-responsive">
-                <table class="table w-100 p-md-5">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="text-center align-middle p-xl-3">ID</th>
-                            <th class="text-center align-middle p-xl-3">Deadline</th>
-                            <th class="text-center align-middle p-xl-3">Importance</th>
-                            <th class="text-center align-middle p-xl-3">Description</th>
-                            <th class="text-center align-middle p-xl-3">Assigned to</th>
-                            <th class="text-center align-middle p-xl-3">Progress</th>
-                            <th class="text-center align-middle p-xl-3">Actions</th>
-                        </tr>
-                    </thead>
-                    {% for task in tasks %}
-                    {% if task.team_name == team %}
+        <h4>Team {{ team }}</h4>
+        <div class="table-responsive">
+            <table class="table w-100 p-md-5">
+                <thead class="table-light">
                     <tr>
-                        <td class="text-center align-middle p-xl-3" id="id{{ task.id }}">
-                            {{ task.id }}
-                        </td>
-                        <td class="text-center align-middle p-xl-3">
-                            <input type="text" class="form-control bg-dark text-light deadline" id="deadline{{ task.id }}"
-                                value="{{ task.deadline.strftime('%d %B, %Y') }}" name="deadline" required>
-                        </td>
-                        <td class="text-center align-middle p-xl-3">
-                            <select class="form-select bg-dark text-light" id="imp{{ task.id }}">
-                                <option value="0" {% if task.importance==0 %} selected {% endif %}>Low</option>
-                                <option value="1" {% if task.importance==1 %} selected {% endif %}>Medium</option>
-                                <option value="2" {% if task.importance==2 %} selected {% endif %}>High</option>
-                            </select>
-                        </td>
-                        <td class="text-center align-middle p-xl-3">
-                            <div contenteditable id="desc{{ task.id }}">{{ task.description }}</div>
-                        </td>
-                        <td class="text-center align-middle p-xl-3">
-                            <select class="form-select bg-dark text-light" id="asn{{ task.id }}">
-                                {% for user in task.normal_users %}
-                                    <option value = "{{ user }}" {% if user == task.assignedto %}selected{% endif %}>{{ user }}</option>
-                                {% endfor %}
-                        </td>
-                        <td class="text-center align-middle p-xl-3">
-                            {{ ["Assigned", "In Progress", "Completed"][task.progress] }}
-                        </td>
-                        <td class="text-center align-middle p-xl-3">
-                            <a class="text-warning fw-bold" href="" data-bs-toggle="modal"
-                                onclick="showTaskConfirm('{{ task.id }}')" data-bs-target="#confirmTaskModal">
-                                <span class="material-icons align-middle">
-                                    update
-                                </span>
-                                Update
-                            </a>
-                        </td>
+                        <th class="text-center align-middle p-xl-3">ID</th>
+                        <th class="text-center align-middle p-xl-3">Deadline</th>
+                        <th class="text-center align-middle p-xl-3">Importance</th>
+                        <th class="text-center align-middle p-xl-3">Description</th>
+                        <th class="text-center align-middle p-xl-3">Assigned to</th>
+                        <th class="text-center align-middle p-xl-3">Progress</th>
+                        <th class="text-center align-middle p-xl-3">Actions</th>
                     </tr>
-                    {% endif %}
-                    {% endfor %}
-                </table>
-            </div>
-            <br><br>
+                </thead>
+                {% for task in tasks %}
+                {% if task.team_name == team %}
+                <tr>
+                    <td class="text-center align-middle p-xl-3" id="id{{ task.id }}">
+                        {{ task.id }}
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <input type="text" class="form-control bg-dark text-light deadline" id="deadline{{ task.id }}"
+                            value="{{ task.deadline.strftime('%d %B, %Y') }}" name="deadline" required>
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <select class="form-select bg-dark text-light" id="imp{{ task.id }}">
+                            <option value="0" {% if task.importance==0 %} selected {% endif %}>Low</option>
+                            <option value="1" {% if task.importance==1 %} selected {% endif %}>Medium</option>
+                            <option value="2" {% if task.importance==2 %} selected {% endif %}>High</option>
+                        </select>
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <div contenteditable id="desc{{ task.id }}">{{ task.description }}</div>
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <select class="form-select bg-dark text-light" id="asn{{ task.id }}">
+                            {% for user in task.normal_users %}
+                            <option value="{{ user }}" {% if user==task.assignedto %}selected{% endif %}>{{ user }}
+                            </option>
+                            {% endfor %}
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        {{ ["Assigned", "In Progress", "Completed"][task.progress] }}
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <a class="text-warning fw-bold" href="" data-bs-toggle="modal"
+                            onclick="showTaskConfirm('{{ task.id }}')" data-bs-target="#confirmTaskModal">
+                            <span class="material-icons align-middle">
+                                update
+                            </span>
+                            Update
+                        </a>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </table>
+        </div>
+        <br><br>
         {% endfor %}
     </div>
 </div>
@@ -127,28 +324,53 @@
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/ui-darkness/jquery-ui.css">
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script type="text/javascript">
+
+    console.log('{{ teams }}')
+
     $('.deadline').datepicker({
         dateFormat: 'dd MM, yy',
     });
 
-    function updateTask(taskID) {
-        console.log(taskID);
+    function updateTask(username) {
+        console.log(username);
         var xhr = new XMLHttpRequest();
-        var e = document.getElementById("imp" + taskID);
-        var e2 = document.getElementById("asn" + taskID);
-        var data = { "taskID": taskID, "deadline": document.getElementById("deadline" + taskID).value, "description": document.getElementById("desc" + taskID).innerHTML, "importance": e.options[e.selectedIndex].value, "assignedto": e2.options[e2.selectedIndex].value };
+        var e = document.getElementById("imp" + username);
+        var e2 = document.getElementById("asn" + username);
+        var data = { "username": username, "deadline": document.getElementById("deadline" + username).value, "description": document.getElementById("desc" + username).innerHTML, "importance": e.options[e.selectedIndex].value, "assignedto": e2.options[e2.selectedIndex].value };
         console.log(data);
         xhr.open("POST", "/updateTask", true);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(JSON.stringify(data));
 
         setTimeout(function () {
-            $("#tasks").load(location.href+" #tasks>*","");
+            $("#tasks").load(location.href + " #tasks>*", "");
         }, 500);
     }
 
-    function showTaskConfirm(taskID) {
-        $('#confirmTask').html(taskID);
+    function updateTask(unurl) {
+        console.log(unurl);
+        let username = unurl.split(",")[0]        
+        let url = unurl.split(",")[1]
+        var xhr = new XMLHttpRequest();
+        var e = document.getElementById("imp" + username);
+        var e2 = document.getElementById("asn" + username);
+        var data = { "username": username, "name": $("#name"+username).val() , "hiredate": document.getElementById("hiredate" + username).value, "description": document.getElementById("desc" + username).innerHTML, "importance": e.options[e.selectedIndex].value, "assignedto": e2.options[e2.selectedIndex].value };
+        console.log(data);
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify(data));
+
+        setTimeout(function () {
+            $("#tasks").load(location.href + " #tasks>*", "");
+        }, 500);
+    }
+
+    function showTaskConfirm(username) {
+        $('#confirmTask').html(username);
+    }
+
+    function showEmployeeConfirm(username, url) {
+        $('#confirmEmployee').html(username+","+url);
     }
 </script>
 

@@ -36,6 +36,12 @@ class Task:
     normal_users : list = None
     team_name : str = ""
 
+@dataclass()
+class Team:
+    name: str
+    leader: str
+    normal_users: list = None
+
 @app.route('/',methods=['GET','POST'])
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -108,14 +114,20 @@ def dashboard():
             task.team_name = list(res)[0][0]
             res = cur.execute(f"select u from (SELECT TEAMID, PLOGIN.USERNAME u FROM PLOGIN, PNORMAL WHERE PLOGIN.USERNAME = PNORMAL.USERNAME) where teamid = {teamid}")
             task.normal_users = [user[0] for user in list(res)]
-        
-        return render_template('admin_dashboard.html', user=emp, tasks=tasks, task_teams={t.team_name for t in tasks})
+        res = cur.execute("select * from pteam")
+        teams = {teamid: teamname for teamid, teamname in list(res)}
+        teamsfullinfo = [Team(teams[teamid], getLeader(teamid), getNormal(teamid)) for teamid in teams]
+        # print(teamsfullinfo)
+        res = cur.execute("select name, username, 'Admin' as type, hiredate, salary from pemployee where username in (select username from plogin where type='admin')")
+        admin = [Employee(*a) for a in list(res)]
+        return render_template('admin_dashboard.html', user=emp, tasks=tasks, task_teams={t.team_name for t in tasks}, teams=teamsfullinfo, admin=admin)
 
     if emp.type == 'teamleader':
         # print('team leader')
         team = []
         for re in list(leader_team_dashboard(emp)):
             team.append(Employee(*re))
+        print(team)
         
         task = []
         for re in list(leader_task_dashboard(emp)):
@@ -217,4 +229,14 @@ def leader_task_dashboard(emp):
 
     return cur.execute(f"SELECT TASKID, DEADLINE, IMPORTANCE, DESCR, USERNAME, PROGRESS FROM PTASK, PNORMAL WHERE PTASK.ASSIGNEDTO = PNORMAL.USERNAME AND PNORMAL.TEAMID = (SELECT PTEAMLEADER.TEAMID FROM PTEAMLEADER WHERE PTEAMLEADER.USERNAME = '{emp.username}')")
     
+def getLeader(teamid):
+    connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+    cur = connection.cursor()
+    res = cur.execute(f"select name, username, 'Team Leader' as type, hiredate, salary from pemployee where username = (select username from pteamleader where teamid={teamid})")
+    return Employee(*list(res)[0])
 
+def getNormal(teamid):
+    connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+    cur = connection.cursor()
+    res = cur.execute(f"select name, username, 'Normal' as type, hiredate, salary from pemployee where username in (select username from pnormal where teamid={teamid})")
+    return [Employee(*emp) for emp in list(res)]
