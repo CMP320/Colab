@@ -194,7 +194,11 @@ def dashboard():
         res = cur.execute(f"select teamname from pteam where teamID = (select teamID from pteamleader where username = '{emp.username}')")
         teamName = list(res)[0][0]
 
-        return render_template('leader_dashboard.html', res=team, tasks=task, user=emp, teamName = teamName)
+        connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+        cur = connection.cursor()
+        null_tasks = [Task(*t) for t in list(cur.execute("select * from ptask where assignedto is null"))]
+        
+        return render_template('leader_dashboard.html', res=team, tasks=task, user=emp, teamName = teamName, null_tasks=null_tasks)
         
     if emp.type == 'normal':
         # print('normal')

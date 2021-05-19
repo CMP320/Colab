@@ -150,6 +150,65 @@
             </table>
         </div>
         <br>
+        <h4>Unassigned Tasks</h4>
+        <div class="table-responsive">
+            <table class="table w-100 p-md-5">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center align-middle p-xl-3">Task ID</th>
+                        <th class="text-center align-middle p-xl-3">Assigned To</th>
+                        <th class="text-center align-middle p-xl-3">Deadline</th>
+                        <th class="text-center align-middle p-xl-3">Description</th>
+                        <th class="text-center align-middle p-xl-3">Importance</th>
+                        <th class="text-center align-middle p-xl-3">Progress</th>
+                        <th class="text-center align-middle p-xl-3">Actions</th>
+                    </tr>
+                </thead>
+                {% for task in null_tasks %}
+                <tr>
+                    <td class="text-center align-middle p-xl-3">
+                        {{ task.id }}
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <select class="form-select bg-dark text-light" id="asst{{task.id}}">
+                            <option value="-1">Select an Employee</option>
+                            {% for emp in res %}
+                            <option value="{{emp.username}}">{{emp.name}} ({{ emp.username }})</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="text-center align-middle p-xl-3" id="gg">
+                        <input type="text" class="form-control bg-dark text-light deadline"
+                            value="{{ task.deadline.strftime('%d %B, %Y') }}" name="deadline" required
+                            id="dlt{{task.id}}">
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <div contenteditable id="descrt{{task.id}}">{{ task.description }}</div>
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <select class="form-select bg-dark text-light" id="impt{{ task.id }}">
+                            <option value="0" {% if task.importance==0 %} selected {% endif %}>Low</option>
+                            <option value="1" {% if task.importance==1 %} selected {% endif %}>Medium</option>
+                            <option value="2" {% if task.importance==2 %} selected {% endif %}>High</option>
+                        </select>
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <div>{{ ["Assigned", "In Progress", "Completed"][task.progress] }}</div>
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        <a class="text-warning fw-bold" href="" data-bs-toggle="modal"
+                            onclick="showTaskConfirm('t'+'{{ task.id }}')" data-bs-target="#confirmTaskModal">
+                            <span class="material-icons align-middle">
+                                assignment_ind
+                            </span>
+                            Assign
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <br>
         <div class="text-center">
             <a href="#" data-bs-toggle="modal" data-bs-target="#addTaskModal" class="btn btn-primary w-50">
                 <span class="material-icons align-middle">library_add</span>&emsp;
