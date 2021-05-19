@@ -287,7 +287,7 @@
                         &emsp;
                         <a class="text-danger fw-bold" href="" data-bs-toggle="modal"
                             onclick="showEmployeeConfirm('{{ a.username }}','/deleteEmployee')"
-                            data-bs-target="#confirmEmployeeModal">
+                            data-bs-target="#confirmEmployeeModal" {% if a.username == user.username %}style= "display: none"{% endif %}>
                             <span class="material-icons align-middle">
                                 delete
                             </span>

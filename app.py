@@ -343,6 +343,8 @@ def deleteEmployee():
         res = cur.execute(f"delete from pnormal where username='{username}'")
     elif tp == "Team Leader":
         res = cur.execute(f"delete from pteamleader where username='{username}'")
+    else:
+        res = cur.execute(f"delete from padmin where username='{username}'")
     res = cur.execute(f"delete from pemployee where username = '{username}'")
     connection.commit()
     return 'success'
@@ -388,6 +390,8 @@ def addEmployee():
             bonus = int(request.json['bonus'])
             validate(bonus, int)
             res = cur.execute(f"insert into pteamleader values('{username}', {bonus}, {teamid})")
+        else:
+            res = cur.execute(f"insert into padmin values('{username}', NULL)")
         connection.commit()
         return 'success'
     except Exception as e:
