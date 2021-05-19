@@ -211,6 +211,15 @@
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(JSON.stringify(data));
 
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                if(xhr.responseText != 'success'){
+                    alert('Error: ' + xhr.responseText );
+                }
+            }
+        };
+        
+
         setTimeout(function () {
             $("#tasks").load(location.href+" #tasks>*","");
         }, 500);
@@ -226,6 +235,14 @@
         xhr.open("POST", "/updateTask", true);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(JSON.stringify(data));
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                if(xhr.responseText != 'success'){
+                    alert('Error: ' + xhr.responseText );
+                }
+            }
+        };
 
         setTimeout(function () {
             $("#tasks").load(location.href+" #tasks>*","");

@@ -136,7 +136,7 @@
                 <div class="modal-footer text-center">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
                     <button class="btn btn-primary w-75" type="submit" data-bs-dismiss="modal" onclick="addEmployee()">
-                        Create Task
+                        Add Employee
                     </button>
                 </div>
             </form>
@@ -164,6 +164,12 @@
     Tasks
 </button>
 
+<button class="fs-5 pr-2 nav-link text-white" data-bs-toggle="tab" href="#payroll" data-target="#payroll" type="button"
+    role="tab">
+    <span class="material-icons align-middle">paid</span>
+    Payroll
+</button>
+
 {% endblock navlinks %}
 
 {% block navtabs %}
@@ -171,7 +177,61 @@
 <div class="card border-primary mb-3 tab-pane active in" role="tabpanel" id="logs">
     <div class="card-header text-primary h5 p-3">Logistics</div>
     <div class="card-body">
-
+        <strong class="card-title text-primary">
+            Quick Stats
+        </strong>
+        <div class="row">
+            <div class="col-md card bg-primary p-xl-5 ml-md-3 mr-md-3 mx-s-3">
+                <strong class="card-title text-white">
+                    Most Tasks Completed
+                </strong>
+                <div class="card-body text-secondary fs-3">
+                    {{teams[stats["maxcompl"]].name}}
+                    <br>
+                    <div class="text-center">
+                    {{stats["ts"][stats["maxcompl"]][2]}} / {{(stats["ts"][stats["maxcompl"]])|sum}}</div>
+                </div>
+            </div>
+            <div class="col-md card bg-primary p-xl-5  ml-md-3 mr-md-3 mx-s-3">
+                <strong class="card-title text-white">
+                    Most Tasks in Progress
+                </strong>
+                <div class="card-body text-secondary fs-3">
+                    {{teams[stats["maxprog"]].name}}
+                    <br>
+                    <div class="text-center">
+                        {{stats["ts"][stats["maxprog"]][1]}} / {{(stats["ts"][stats["maxprog"]])|sum}} </div>
+                </div>
+            </div>
+            <div class="col-md card bg-primary p-xl-5  ml-md-3 mr-md-3 mx-s-3">
+                <strong class="card-title text-white">
+                    Best Task Completion Ratio
+                </strong>
+                <div class="card-body text-secondary fs-3">
+                    {{teams[stats["maxcomplrat"]].name}}
+                    <br>
+                    <div class="text-center">
+                        {{(stats["ts"][stats["maxcomplrat"]][2]/(stats["ts"][stats["maxcomplrat"]])|sum)*100}} %</div>
+                </div>
+            </div>
+        </div>
+        <br>
+        <strong class="card-title text-primary">
+            Task Statistics
+        </strong>
+        <div class="card-deck">
+            {% for team in teams %}
+            <div class="card bg-primary text-light p-5 fs-5">
+                <strong class="card-title">Team {{team.name}}</strong>
+                <p>Started: {{stats["ts"][team.id][0]}}
+                    <br>
+                    In Progress: {{stats["ts"][team.id][1]}}
+                    <br>
+                    Completed: {{stats["ts"][team.id][2]}}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </div>
 
@@ -242,7 +302,7 @@
         {% for team in teams %}
         <div class="d-flex">
             <h4>Team&nbsp;</h4>
-            <h4 id="teamname{{ team.id }}" contenteditable>{{team.name}}</h4>
+            <h4 id="teamname{{ team.id }}" contenteditable>{{team.name}}</h4><h4>&nbsp;({{team.id}})</h4>
             <div class="flex-grow-1"></div>
             <a class="text-warning fw-bold" href="" data-bs-toggle="modal"
                 onclick="showEmployeeConfirm('{{ team.id }}','/updateTeamName')" data-bs-target="#confirmEmployeeModal">
@@ -439,6 +499,84 @@
     </div>
 </div>
 
+<div class="card border-primary mb-3 tab-pane in" role="tabpanel" id="payroll">
+    <div class="card-header text-primary h5 p-3">Payroll</div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table w-100 p-md-5">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center align-middle p-xl-3">Name</th>
+                        <th class="text-center align-middle p-xl-3">Salary ($)</th>
+                        <th class="text-center align-middle p-xl-3">Overtime (hrs)</th>
+                        <th class="text-center align-middle p-xl-3">Bonus ($)</th>
+                        <th class="text-center align-middle p-xl-3">Total ($)</th>
+                    </tr>
+                </thead>
+                {% for team in teams %}
+                <tr>
+                    <td class="text-center align-middle p-xl-3">
+                        {{ team.leader.name }}
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        {{ "$ %.2f" % team.leader.sal }}
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        -
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        {{ "$ %.2f" % team.leader.overtime_bonus }}
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        {{ "$ %.2f" % total_sal[team.leader.username] }}
+                    </td>
+                </tr>
+                {% for emp in team.normal_users %}
+                <tr>
+
+                    <td class="text-center align-middle p-xl-3">
+                        {{ emp.name }}
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        {{ "$ %.2f" % emp.sal }}
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        {{ "%.2f" % emp.overtime_bonus }}
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        -
+                    </td>
+                    <td class="text-center align-middle p-xl-3">
+                        {{ "$ %.2f" % total_sal[emp.username] }}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+            </table>
+        </div>
+                <div class="table-responsive">
+                    <table class="table w-100 p-md-5">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center align-middle p-xl-3">Total Team Leader Salary ($)</th>
+                        <th class="text-center align-middle p-xl-3">Total Normal Employee Salary ($)</th>
+                        <th class="text-center align-middle p-xl-3">Total Payroll ($)</th>
+                    </tr>
+                </thead>
+                <td class="text-center align-middle p-xl-3">
+                    {{ "$ %.2f" % total_sal["total_leader_sal"] }}
+                </td>
+                <td class="text-center align-middle p-xl-3">
+                    {{ "$ %.2f" % total_sal["total_normal_sal"] }}
+                </td>
+                <td class="text-center align-middle p-xl-3">
+                    {{ "$ %.2f" % (total_sal["total_leader_sal"] + total_sal["total_normal_sal"])}}
+                </td>
+            </table>
+        </div>
+    </div>
+</div>
+
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/ui-darkness/jquery-ui.css">
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script type="text/javascript">
@@ -478,6 +616,14 @@
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(JSON.stringify(data));
 
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                if(xhr.responseText != 'success'){
+                    alert('Error: ' + xhr.responseText );
+                }
+            }
+        };
+
         setTimeout(function () {
             $("#employees").load(location.href + " #employees>*", "");
         }, 500);
@@ -493,6 +639,13 @@
         xhr.open("POST", "/addTeam", true);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(JSON.stringify(data));
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                if(xhr.responseText != 'success'){
+                    alert('Error: ' + xhr.responseText );
+                }
+            }
+        };
 
         setTimeout(function () {
             $("#employees").load(location.href + " #employees>*", "");
@@ -509,6 +662,14 @@
         xhr.open("POST", "/updateTask", true);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(JSON.stringify(data));
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                if(xhr.responseText != 'success'){
+                    alert('Error: ' + xhr.responseText );
+                }
+            }
+        };
 
         setTimeout(function () {
             $("#tasks").load(location.href + " #tasks>*", "");
@@ -531,10 +692,23 @@
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(JSON.stringify(data));
 
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                if(xhr.responseText != 'success'){
+                    alert('Error: ' + xhr.responseText );
+                }
+            }
+        };
+
         setTimeout(function () {
             $("#employees").load(location.href + " #employees>*", "");
+            $("#payroll").load(location.href + " #payroll>*", "");
         }, 500);
     }
+
+    var intervalId = setInterval(function () {
+        $("#logs").load(location.href + " #logs>*", "")
+    }, 2000);
 
     function showTaskConfirm(username) {
         $('#confirmTask').html(username);

@@ -9,6 +9,19 @@ sessions = {}
 
 app = Flask(__name__)
 
+def validate(inp, typ, lmin=-1, lmax=-1):
+    if lmin!= -1 and lmax!=-1:
+        if len(inp) < lmin or len(inp) > lmax:
+            raise Exception('Input length error')
+    
+    if typ == dt:
+        try:
+            inp = dt.strptime(inp,'%d %B, %Y')
+        except:
+            raise Exception('Invalid date format')
+    else:
+        inp = typ(inp)
+
 def getType(ck):
     global sessions
     if 'sessionID' not in ck.keys():
@@ -24,6 +37,7 @@ class Employee:
     type : str
     hiredate : str = ''
     sal : float = 0.0
+    overtime_bonus: float = -1
 
 @dataclass()
 class Task:
@@ -35,6 +49,7 @@ class Task:
     progress : int
     normal_users : list = None
     team_name : str = ""
+    teamid: int = -1
 
 @dataclass()
 class Team:
@@ -110,7 +125,8 @@ def dashboard():
         tasks = [Task(*task) for task in list(res)]
         for task in tasks:
             res = cur.execute(f"select teamid from (SELECT TEAMID, PLOGIN.USERNAME u FROM PLOGIN, PNORMAL WHERE PLOGIN.USERNAME = PNORMAL.USERNAME) where u = '{task.assignedto}'")
-            teamid = list(res)[0][0]
+            teamid = int(list(res)[0][0])
+            task.teamid =teamid
             res = cur.execute(f"select teamname from pteam where teamid={teamid}")
             task.team_name = list(res)[0][0]
             res = cur.execute(f"select u from (SELECT TEAMID, PLOGIN.USERNAME u FROM PLOGIN, PNORMAL WHERE PLOGIN.USERNAME = PNORMAL.USERNAME) where teamid = {teamid}")
@@ -119,9 +135,33 @@ def dashboard():
         teams = {teamid: teamname for teamid, teamname in list(res)}
         teamsfullinfo = [Team(teams[teamid], getLeader(teamid), getNormal(teamid), teamid) for teamid in teams]
         # print(teamsfullinfo)
+        taskstat = {}
+        res=cur.execute("select teamid, progress, count(*) from ptask, pnormal where assignedto is not null and ptask.assignedto=pnormal.username group by progress, teamid order by teamid, progress")
+        res = list(res)
+        for tid in teams.keys():
+            taskstat[tid] = [0,0,0]
+        for r in res:
+            taskstat[r[0]][r[1]]=r[2]
+        stats = {"ts": taskstat}
+        print(stats)
+        maxcompl = [tid for tid,tsk in taskstat.items() if tsk[2] == max(t[2] for t in taskstat.values())][0]
+        maxprog = [tid for tid,tsk in taskstat.items() if tsk[1] == max(t[1] for t in taskstat.values())][0]
+        maxcomplrat = [tid for tid,tsk in taskstat.items() if sum(tsk) !=0 and tsk[2]/sum(tsk) == max(t[2]/sum(t) for t in taskstat.values() if sum(t) !=0)][0]
+        stats["maxcompl"] = maxcompl
+        stats["maxprog"] = maxprog
+        stats["maxcomplrat"] = maxcomplrat
+        print(stats)
         res = cur.execute("select name, username, 'Admin' as type, hiredate, salary from pemployee where username in (select username from plogin where type='admin')")
         admin = [Employee(*a) for a in list(res)]
-        return render_template('admin_dashboard.html', user=emp, tasks=tasks, task_teams={t.team_name for t in tasks}, teams=teamsfullinfo, admin=admin)
+        res = cur.execute(f"select username,salary+120*overtime as total from pemployee natural join pnormal")
+        total_sal = {r[0] : r[1] for r in list(res)}
+        res = cur.execute(f"select username,salary+bonus as total from pemployee natural join pteamleader")
+        total_sal.update({r[0] : r[1] for r in list(res)})
+        res = cur.execute(f"select sum(salary+120*overtime) as total from pemployee natural join pnormal")
+        total_sal["total_normal_sal"] = float(list(res)[0][0])
+        res = cur.execute(f"select sum(salary+bonus) as total from pemployee natural join pteamleader")
+        total_sal["total_leader_sal"] = float(list(res)[0][0])
+        return render_template('admin_dashboard.html', user=emp, tasks=tasks, task_teams={t.team_name for t in tasks}, teams=teamsfullinfo, admin=admin, stats=stats, total_sal=total_sal)
 
     if emp.type == 'teamleader':
         # print('team leader')
@@ -172,48 +212,62 @@ def dashboard():
 
 @app.route("/updateTask", methods = ['POST'])
 def updateTask():
-    taskID = int(request.json['taskID'])
-    deadline = request.json['deadline']
-    descr = request.json['description']
-    imp = int(request.json['importance'])
-    assignedto = request.json['assignedto']
-    connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
-    cur = connection.cursor()
-    res = cur.execute(f"update ptask set assignedTo = '{assignedto}', deadline = TO_DATE('{deadline}', 'dd MONTH, yyyy'), importance = {imp}, descr = '{descr}'  where taskID = {taskID}")
-    connection.commit()
-    return 'success'
-
+    try:
+        taskID = int(request.json['taskID'])
+        deadline = request.json['deadline']
+        validate(deadline, dt)
+        descr = request.json['description']
+        validate(descr, str, 1, 200)
+        imp = int(request.json['importance'])
+        validate(imp, int)
+        assignedto = request.json['assignedto']
+        connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+        cur = connection.cursor()
+        res = cur.execute(f"update ptask set assignedTo = '{assignedto}', deadline = TO_DATE('{deadline}', 'dd MONTH, yyyy'), importance = {imp}, descr = '{descr}'  where taskID = {taskID}")
+        connection.commit()
+        return 'success'
+    except Exception as e:
+        return str(e)
 
 @app.route("/addTask", methods = ['POST'])
 def addTask():
-    connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
-    cur = connection.cursor()
-    res = cur.execute(f"select max(taskID) from ptask")
+    try:
+        connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+        cur = connection.cursor()
+        res = cur.execute(f"select max(taskID) from ptask")
 
-    taskID = int(list(res)[0][0]) + 1
-    deadline = request.json['deadline']
-    descr = request.json['descr']
-    imp = int(request.json['imp'])
-    assignedto = request.json['assignto']
-    cur = connection.cursor()
-    res = cur.execute(f"insert into ptask values ({taskID}, TO_DATE('{deadline}', 'dd MONTH, yyyy'), {imp}, '{descr}', '{assignedto}', 0)")
-    connection.commit()
-    return 'success'
+        taskID = int(list(res)[0][0]) + 1
+        deadline = request.json['deadline']
+        validate(deadline, dt)
+        descr = request.json['descr']
+        validate(descr, str, 1, 200)
+        imp = int(request.json['imp'])
+        validate(imp, int)
+        assignedto = request.json['assignto']
+        cur = connection.cursor()
+        res = cur.execute(f"insert into ptask values ({taskID}, TO_DATE('{deadline}', 'dd MONTH, yyyy'), {imp}, '{descr}', '{assignedto}', 0)")
+        connection.commit()
+        return 'success'
+    except Exception as e:
+        return str(e)
 
 
 @app.route("/addTeam", methods = ['POST'])
 def addTeam():
-    connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
-    cur = connection.cursor()
-    res = cur.execute(f"select max(teamID) from pteam")
+    try:
+        connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+        cur = connection.cursor()
+        res = cur.execute(f"select max(teamID) from pteam")
 
-    teamID = int(list(res)[0][0]) + 1
-    teamname = request.json['tname']
-    cur = connection.cursor()
-    res = cur.execute(f"insert into pteam values ({teamID}, '{teamname}')")
-    connection.commit()
-    return 'success'
-
+        teamID = int(list(res)[0][0]) + 1
+        teamname = request.json['tname']
+        validate(teamname, str, 1, 50)
+        cur = connection.cursor()
+        res = cur.execute(f"insert into pteam values ({teamID}, '{teamname}')")
+        connection.commit()
+        return 'success'
+    except Exception as e:
+        return str(e)
 
 @app.route("/startCompleteTask", methods = ['POST'])
 def startCompleteTask():
@@ -234,35 +288,46 @@ def startCompleteTask():
 
 @app.route("/updateTeamName", methods = ['POST'])
 def updateTeamName():
-    global sessions
-    if getType(request.cookies) != "admin":
-        return redirect(url_for('login'))
-    teamid = request.json['teamid']
-    teamname = request.json['teamname']
-    connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
-    cur = connection.cursor()
-    res = cur.execute(f"update pteam set teamname='{teamname}' where teamid={teamid}")
-    connection.commit()
-    return 'success'
+    try:
+        global sessions
+        if getType(request.cookies) != "admin":
+            return redirect(url_for('login'))
+        teamid = request.json['teamid']
+        teamname = request.json['teamname']
+        validate(teamname, str, 1, 50)
+        connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+        cur = connection.cursor()
+        res = cur.execute(f"update pteam set teamname='{teamname}' where teamid={teamid}")
+        connection.commit()
+        return 'success'
+    except Exception as e:
+        return str(e)
 
 @app.route("/updateEmployee", methods = ['POST'])
 def updateEmployee():
-    global sessions
-    if getType(request.cookies) != "admin":
-        return redirect(url_for('login'))
-    username = request.json['username']
-    name = request.json['name']
-    password = md5(request.json['password'].encode()).hexdigest()
-    hiredate = request.json['hiredate']
-    salary = float(request.json['salary'])
-    connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
-    cur = connection.cursor()
-    if request.json['password'] != '':
-        res = cur.execute(f"update pemployee set name='{name}', password='{password}', hiredate=TO_DATE('{hiredate}','dd MONTH, yyyy'), salary={salary} where username='{username}'")
-    else:
-        res = cur.execute(f"update pemployee set name='{name}', hiredate=TO_DATE('{hiredate}','dd MONTH, yyyy'), salary={salary} where username='{username}'")
-    connection.commit()
-    return 'success'
+    try:
+        global sessions
+        if getType(request.cookies) != "admin":
+            return redirect(url_for('login'))
+        username = request.json['username']
+        validate(username, str, 1, 50)
+        name = request.json['name']
+        validate(name, str, 1, 50)
+        password = md5(request.json['password'].encode()).hexdigest()
+        hiredate = request.json['hiredate']
+        validate(hiredate, dt)
+        salary = float(request.json['salary'])
+        validate(salary, float)
+        connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+        cur = connection.cursor()
+        if request.json['password'] != '':
+            res = cur.execute(f"update pemployee set name='{name}', password='{password}', hiredate=TO_DATE('{hiredate}','dd MONTH, yyyy'), salary={salary} where username='{username}'")
+        else:
+            res = cur.execute(f"update pemployee set name='{name}', hiredate=TO_DATE('{hiredate}','dd MONTH, yyyy'), salary={salary} where username='{username}'")
+        connection.commit()
+        return 'success'
+    except Exception as e:
+        return str(e)
 
 @app.route("/deleteEmployee", methods = ['POST'])
 def deleteEmployee():
@@ -284,40 +349,49 @@ def deleteEmployee():
 
 @app.route("/addEmployee", methods = ['POST'])
 def addEmployee():
-    global sessions
-    if getType(request.cookies) != "admin":
-        return redirect(url_for('login'))
-# bonus: ""
-# hiredate: "bzdf"
-# name: "svz"
-# overtime: ""
-# password: "bxzb"
-# salary: "bzf"
-# team: "0"
-# type: "admin"
-# username: "bhzfhzd"
-    username = request.json['username']
-    name = request.json['name']
-    password = md5(request.json['password'].encode()).hexdigest()
-    hiredate = request.json['hiredate']
-    salary = float(request.json['salary'])
-    tp = request.json['type']
-    connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
-    cur = connection.cursor()
-    if request.json['password'] != '':
-        res = cur.execute(f"insert into pemployee values('{name}', '{username}', '{password}', TO_DATE('{hiredate}','dd MONTH, yyyy'), {salary})")
-    else:
-        return "failure", 406
-    if tp == "normal":
-        teamid = request.json['team']
-        overtime = float(request.json['overtime'])
-        res = cur.execute(f"insert into pnormal values('{username}', {overtime}, {teamid})")
-    elif tp == "teamleader":
-        teamid = request.json['team']
-        bonus = float(request.json['bonus'])
-        res = cur.execute(f"insert into pteamleader values('{username}', {bonus}, {teamid})")
-    connection.commit()
-    return 'success'
+    try:
+        global sessions
+        if getType(request.cookies) != "admin":
+            return redirect(url_for('login'))
+    # bonus: ""
+    # hiredate: "bzdf"
+    # name: "svz"
+    # overtime: ""
+    # password: "bxzb"
+    # salary: "bzf"
+    # team: "0"
+    # type: "admin"
+    # username: "bhzfhzd"
+        username = request.json['username']
+        validate(username, str, 1, 50)
+        name = request.json['name']
+        validate(name, str, 1, 50)
+        password = md5(request.json['password'].encode()).hexdigest()
+        hiredate = request.json['hiredate']
+        validate(hiredate, dt)
+        salary = float(request.json['salary'])
+        validate(salary, float)
+        tp = request.json['type']
+        connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+        cur = connection.cursor()
+        if request.json['password'] != '':
+            res = cur.execute(f"insert into pemployee values('{name}', '{username}', '{password}', TO_DATE('{hiredate}','dd MONTH, yyyy'), {salary})")
+        else:
+            return "failure", 406
+        if tp == "normal":
+            teamid = request.json['team']
+            overtime = float(request.json['overtime'])
+            validate(overtime, float)
+            res = cur.execute(f"insert into pnormal values('{username}', {overtime}, {teamid})")
+        elif tp == "teamleader":
+            teamid = request.json['team']
+            bonus = int(request.json['bonus'])
+            validate(bonus, int)
+            res = cur.execute(f"insert into pteamleader values('{username}', {bonus}, {teamid})")
+        connection.commit()
+        return 'success'
+    except Exception as e:
+        return str(e)
 
 
 def leader_team_dashboard(emp):
@@ -335,12 +409,12 @@ def leader_task_dashboard(emp):
 def getLeader(teamid):
     connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
     cur = connection.cursor()
-    res = cur.execute(f"select name, username, 'Team Leader' as type, hiredate, salary from pemployee where username = (select username from pteamleader where teamid={teamid})")
+    res = cur.execute(f"select name, pemployee.username, 'Team Leader' as type, hiredate, salary, bonus from pemployee, pteamleader where pemployee.username = pteamleader.username and pteamleader.teamid={teamid}")
     res = list(res)
     return Employee(*(res)[0]) if res else None
 
 def getNormal(teamid):
     connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
     cur = connection.cursor()
-    res = cur.execute(f"select name, username, 'Normal' as type, hiredate, salary from pemployee where username in (select username from pnormal where teamid={teamid})")
+    res = cur.execute(f"select name, pemployee.username, 'Normal' as type, hiredate, salary, overtime from pemployee, pnormal where pemployee.username = pnormal.username and pnormal.teamid={teamid}")
     return [Employee(*emp) for emp in list(res)]
