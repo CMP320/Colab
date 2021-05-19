@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from flask import render_template, Flask, request, redirect, url_for, make_response
 from hashlib import md5, sha256
 import cx_Oracle
-from os import urandom
+from os import spawnl, urandom
 from datetime import datetime as dt
 
 sessions = {}
@@ -88,6 +88,14 @@ def login():
         # print(sessions)
         resp = redirect(url_for('dashboard'))
         resp.set_cookie('sessionID', sessID)
+        if emp.type == "admin":
+            n = dt.now()
+            #print('done',emp.username)
+            connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+            cur = connection.cursor()
+            print(f"update padmin set lastlogin = TO_DATE('{n.day}/{n.month}/{n.year} {n.hour}:{n.minute}:{n.second}', 'dd/mm/yy hh24:mi:ss') where username = '{emp.username}'")
+            res = cur.execute(f"update padmin set lastlogin = TO_DATE('{n.day}/{n.month}/{n.year} {n.hour}:{n.minute}:{n.second}', 'dd/mm/yy hh24:mi:ss') where username = '{emp.username}'")
+            connection.commit()
         return resp
     else:
         return 'pls no hax'
@@ -119,8 +127,15 @@ def dashboard():
 
     if emp.type == 'admin':
         # print('admin')
+        print(request.referrer)
         connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
         cur = connection.cursor()
+
+        res = cur.execute(f"select TO_char(lastlogin, 'dd/mm/yy hh24:mi:ss') from padmin where username = '{emp.username}'")
+        res=list(res)
+        last_login = res[0][0].split()[1] if res and res[0] and len(res[0][0].split()) > 1 else ""
+        connection = cx_Oracle.connect("b00080205/b00080205@coeoracle.aus.edu:1521/orcl")
+        cur = connection.cursor() 
         res = cur.execute("select * from ptask where assignedTo is not null")
         tasks = [Task(*task) for task in list(res)]
         for task in tasks:
@@ -161,7 +176,7 @@ def dashboard():
         total_sal["total_normal_sal"] = float(list(res)[0][0])
         res = cur.execute(f"select sum(salary+bonus) as total from pemployee natural join pteamleader")
         total_sal["total_leader_sal"] = float(list(res)[0][0])
-        return render_template('admin_dashboard.html', user=emp, tasks=tasks, task_teams={t.team_name for t in tasks}, teams=teamsfullinfo, admin=admin, stats=stats, total_sal=total_sal)
+        return render_template('admin_dashboard.html', user=emp, tasks=tasks, task_teams={t.team_name for t in tasks}, teams=teamsfullinfo, admin=admin, stats=stats, total_sal=total_sal, last_login=last_login)
 
     if emp.type == 'teamleader':
         # print('team leader')
